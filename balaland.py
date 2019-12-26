@@ -102,7 +102,14 @@ class Balaland:
                 sys.exit()
 
     def handle_movement(self):
-        self.cam.pos += self.get_pj_movement()
+        pj_direction_x = self.get_pj_single_axis_movement(
+            'x', pygame.K_a, pygame.K_d)
+        pj_direction_y = self.get_pj_single_axis_movement(
+            'y', pygame.K_w, pygame.K_s)
+        self.cam.pos += pygame.math.Vector2(
+            pj_direction_x * self.pj.speed.x,
+            pj_direction_y * self.pj.speed.y,
+        )
 
     def draw(self):
         self.cam.screen.fill(self.black)
@@ -121,36 +128,22 @@ class Balaland:
             pygame.draw.rect(
                 self.cam.screen, screen_tile_pos.color, screen_tile_pos)
 
-    def get_pj_movement(self):
+    def get_pj_single_axis_movement(self, axis, negative_key, positive_key):
         pressed_keys = pygame.key.get_pressed()
-        a_held = pressed_keys[pygame.K_a]
-        d_held = pressed_keys[pygame.K_d]
-        w_held = pressed_keys[pygame.K_w]
-        s_held = pressed_keys[pygame.K_s]
+        negative_held = pressed_keys[negative_key]
+        positive_held = pressed_keys[positive_key]
         half_cam_size = self.cam.width // 2
         half_pj_size = self.pj.size // 2
-        if a_held and d_held:
-            self.pj.direction.x = 0
-        elif a_held and self.cam.pos.x > (0 - half_cam_size + half_pj_size):
-            self.pj.direction.x = -1
-        elif d_held and self.cam.pos.x < (self.cam.map_width - half_cam_size - half_pj_size):  # NOQA E501
-            self.pj.direction.x = 1
+        cam_axis = getattr(self.cam.pos, axis)
+        if negative_held and positive_held:
+            pj_direction = 0
+        elif negative_held and cam_axis > (0 - half_cam_size + half_pj_size):
+            pj_direction = -1
+        elif positive_held and cam_axis < (self.cam.map_width - half_cam_size - half_pj_size):  # NOQA E501
+            pj_direction = 1
         else:
-            self.pj.direction.x = 0
-
-        if w_held and s_held:
-            self.pj.direction.y = 0
-        elif w_held and self.cam.pos.y > (0 - half_cam_size + half_pj_size):
-            self.pj.direction.y = -1
-        elif s_held and self.cam.pos.y < (self.cam.map_height - half_cam_size - half_pj_size):  # NOQA E501
-            self.pj.direction.y = 1
-        else:
-            self.pj.direction.y = 0
-
-        return pygame.math.Vector2(
-            int(self.pj.direction.x * self.pj.speed.x),
-            int(self.pj.direction.y * self.pj.speed.y),
-        )
+            pj_direction = 0
+        return pj_direction
 
 
 if __name__ == '__main__':
