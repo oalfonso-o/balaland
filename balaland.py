@@ -67,14 +67,14 @@ class Cam:
 
 
 class Pj:
-    white = (100, 175, 220)
+    color = (100, 175, 220)
 
     def __init__(self, cam_width):
         self.speed = pygame.math.Vector2(10, 10)
         self.direction = pygame.math.Vector2(0, 0)
         self.size = 50
         self.pos = self._cam_centered_position(cam_width)
-        self.rect = BalaRect(self.pos.x, self.pos.y, self.size, self.white)
+        self.rect = BalaRect(self.pos.x, self.pos.y, self.size, self.color)
 
     def _cam_centered_position(self, cam_width):
         center = (cam_width // 2) - (self.size // 2)
