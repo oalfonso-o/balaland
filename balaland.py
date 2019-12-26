@@ -2,8 +2,15 @@ import sys
 import pygame
 
 
+class BalaRect(pygame.Rect):
+    def __init__(self, x, y, size, color):
+        super().__init__(x, y, size, size)
+        self.color = color
+
+
 class TileMap:
-    color = 220, 200, 100
+    tile_color = 220, 200, 100
+    white = 255, 255, 255
 
     def __init__(self):
         self.tile_size = 200
@@ -18,15 +25,12 @@ class TileMap:
             for y, file_line in enumerate(fd):
                 map_row = []
                 for x, file_tile in enumerate(file_line.replace('\n', '')):
-                    if int(file_tile):
-                        map_row.append(
-                            pygame.Rect(
-                                x * self.tile_size, y * self.tile_size,
-                                self.tile_size, self.tile_size
-                            )
-                        )
-                    else:
-                        map_row.append(None)
+                    color = self.tile_color if int(file_tile) else self.white
+                    tile_rect = BalaRect(
+                        x * self.tile_size, y * self.tile_size, self.tile_size,
+                        color
+                    )
+                    map_row.append(tile_rect)
                 map_.append(map_row)
         return map_
 
@@ -45,7 +49,6 @@ class TileMap:
             tile
             for map_row in self.map[start_tile_pos_y:end_tile_pos_y]
             for tile in map_row[start_tile_pos_x:end_tile_pos_x]
-            if tile
         ]
         return tiles
 
@@ -64,14 +67,14 @@ class Cam:
 
 
 class Pj:
+    white = (100, 175, 220)
+
     def __init__(self, cam_width):
         self.speed = pygame.math.Vector2(10, 10)
         self.direction = pygame.math.Vector2(0, 0)
         self.size = 50
         self.pos = self._cam_centered_position(cam_width)
-        self.rect = pygame.Rect(
-            self.pos.x, self.pos.y, self.size, self.size)
-        self.color = 255, 255, 255
+        self.rect = BalaRect(self.pos.x, self.pos.y, self.size, self.white)
 
     def _cam_centered_position(self, cam_width):
         center = (cam_width / 2) - (self.size / 2)
@@ -104,19 +107,19 @@ class Balaland:
     def draw(self):
         self.cam.screen.fill(self.black)
         self.draw_map()
-        pygame.draw.rect(self.cam.screen, self.pj.color, self.pj.rect)
+        pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)
         pygame.display.flip()
 
     def draw_map(self):
         tiles_in_cam = self.tile_map.get_tiles(
             self.cam.pos, self.cam.cam_tiles())
         for tile in tiles_in_cam:
-            screen_tile_pos = pygame.Rect(
+            screen_tile_pos = BalaRect(
                 tile.x - self.cam.pos.x, tile.y - self.cam.pos.y,
-                tile.width, tile.height,
+                tile.width, tile.color,
             )
             pygame.draw.rect(
-                self.cam.screen, self.tile_map.color, screen_tile_pos)
+                self.cam.screen, screen_tile_pos.color, screen_tile_pos)
 
     def get_pj_movement(self):
         pressed_keys = pygame.key.get_pressed()
