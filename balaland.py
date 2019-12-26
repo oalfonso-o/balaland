@@ -127,22 +127,21 @@ class Balaland:
         d_held = pressed_keys[pygame.K_d]
         w_held = pressed_keys[pygame.K_w]
         s_held = pressed_keys[pygame.K_s]
-        # if a_held or d_held or w_held or s_held:
-        #     import pudb; pudb.set_trace()
+        half_cam_size = self.cam.width // 2
         if a_held and d_held:
             self.pj.direction.x = 0
-        elif a_held and self.cam.pos.x > 0:
+        elif a_held and self.cam.pos.x > (0 - half_cam_size):
             self.pj.direction.x = -1
-        elif d_held and self.cam.pos.x < self.cam.map_width:
+        elif d_held and self.cam.pos.x < (self.cam.map_width - half_cam_size):
             self.pj.direction.x = 1
         else:
             self.pj.direction.x = 0
 
         if w_held and s_held:
             self.pj.direction.y = 0
-        elif w_held and self.cam.pos.y > 0:
+        elif w_held and self.cam.pos.y > (0 - half_cam_size):
             self.pj.direction.y = -1
-        elif s_held and self.cam.pos.y < self.cam.map_height:
+        elif s_held and self.cam.pos.y < (self.cam.map_height - half_cam_size):
             self.pj.direction.y = 1
         else:
             self.pj.direction.y = 0
