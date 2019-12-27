@@ -4,7 +4,7 @@ import pygame
 
 class BalaRect(pygame.Rect):
     def __init__(self, x, y, size, color):
-        super().__init__(x, y, size, size)
+        super().__init__(int(x), int(y), size, size)
         self.color = color
 
 
@@ -55,26 +55,48 @@ class TileMap:
 
 class Cam:
     def __init__(self, tile_map):
-        self.size = 2  # radius from pj to end of cam in tiles
+        self.size = 3  # radius from pj to end of cam in tiles
         self.pos = pygame.math.Vector2(0, 0)
         self.width = tile_map.tile_size * self.size + tile_map.tile_size
         self.screen = pygame.display.set_mode((self.width, self.width))
         self.map_width = tile_map.width * tile_map.tile_size
         self.map_height = tile_map.height * tile_map.tile_size
+        self.limit_pos = None
+
+    def update_limit_pos(self, pj_size):
+        ''' After a pj is instantiated, this method must be called '''
+        half_cam_size = self.width // 2
+        half_pj_size = pj_size // 2
+        negative_cam_limit = half_pj_size - half_cam_size
+        positive_cam_limit = self.map_width - half_cam_size - half_pj_size
+        self.limit_pos = {
+            'x': {
+                '+': positive_cam_limit,
+                '-': negative_cam_limit,
+            },
+            'y': {
+                '+': positive_cam_limit,
+                '-': negative_cam_limit,
+            },
+        }
 
     def cam_tiles(self):
         return self.size * 2 + 1
+
+    def move_pos_limit(self, axis, direction):
+        setattr(self.pos, axis, self.limit_pos[axis][direction])
 
 
 class Pj:
     color = (100, 175, 220)
 
-    def __init__(self, cam_width):
-        self.speed = pygame.math.Vector2(10, 10)
+    def __init__(self, cam):
+        self.speed = pygame.math.Vector2(100, 100)
         self.direction = pygame.math.Vector2(0, 0)
         self.size = 50
-        self.pos = self._cam_centered_position(cam_width)
+        self.pos = self._cam_centered_position(cam.width)
         self.rect = BalaRect(self.pos.x, self.pos.y, self.size, self.color)
+        cam.update_limit_pos(self.size)
 
     def _cam_centered_position(self, cam_width):
         center = (cam_width // 2) - (self.size // 2)
@@ -87,7 +109,7 @@ class Balaland:
     def __init__(self):
         self.tile_map = TileMap()
         self.cam = Cam(self.tile_map)
-        self.pj = Pj(self.cam.width)
+        self.pj = Pj(self.cam)
         self.clock = pygame.time.Clock()
 
     def run(self):
@@ -135,12 +157,23 @@ class Balaland:
         half_cam_size = self.cam.width // 2
         half_pj_size = self.pj.size // 2
         cam_axis = getattr(self.cam.pos, axis)
+        speed = getattr(self.pj.speed, axis)
+        negative_cam_margin = half_pj_size - half_cam_size
+        positive_margin = self.cam.map_width - half_cam_size - half_pj_size
         if negative_held and positive_held:
             pj_direction = 0
-        elif negative_held and cam_axis > (0 - half_cam_size + half_pj_size):
-            pj_direction = -1
-        elif positive_held and cam_axis < (self.cam.map_width - half_cam_size - half_pj_size):  # NOQA E501
-            pj_direction = 1
+        elif negative_held and cam_axis > negative_cam_margin:
+            if cam_axis < (negative_cam_margin + speed):
+                self.cam.move_pos_limit(axis, '-')
+                pj_direction = 0
+            else:
+                pj_direction = -1
+        elif positive_held and cam_axis < positive_margin:
+            if cam_axis > (positive_margin - speed):
+                self.cam.move_pos_limit(axis, '+')
+                pj_direction = 0
+            else:
+                pj_direction = 1
         else:
             pj_direction = 0
         return pj_direction
