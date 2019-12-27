@@ -3,9 +3,10 @@ import pygame
 
 
 class BalaRect(pygame.Rect):
-    def __init__(self, x, y, size, color):
+    def __init__(self, x, y, size, color, solid=False):
         super().__init__(int(x), int(y), size, size)
         self.color = color
+        self.solid = solid
 
 
 class TileMap:
@@ -26,9 +27,10 @@ class TileMap:
                 map_row = []
                 for x, file_tile in enumerate(file_line.replace('\n', '')):
                     color = self.tile_color if int(file_tile) else self.white
+                    solid = bool(int(file_tile))
                     tile_rect = BalaRect(
                         x * self.tile_size, y * self.tile_size, self.tile_size,
-                        color
+                        color, solid
                     )
                     map_row.append(tile_rect)
                 map_.append(map_row)
@@ -95,7 +97,8 @@ class Pj:
         self.direction = pygame.math.Vector2(0, 0)
         self.size = 50
         self.pos = self._cam_centered_position(cam.width)
-        self.rect = BalaRect(self.pos.x, self.pos.y, self.size, self.color)
+        self.rect = BalaRect(
+            self.pos.x, self.pos.y, self.size, self.color, True)
         cam.update_limit_pos(self.size)
 
     def _cam_centered_position(self, cam_width):
@@ -128,27 +131,39 @@ class Balaland:
             'x', pygame.K_a, pygame.K_d)
         pj_direction_y = self.get_pj_single_axis_movement(
             'y', pygame.K_w, pygame.K_s)
-        self.cam.pos += pygame.math.Vector2(
-            pj_direction_x * self.pj.speed.x,
-            pj_direction_y * self.pj.speed.y,
-        )
+
+        self.cam.pos.x += pj_direction_x * self.pj.speed.x
+        x_tiles = self.get_drawable_tiles()
+        if self.pj.rect.collidelist([t for t in x_tiles if t.solid]) >= 0:
+            self.cam.pos.x -= pj_direction_x * self.pj.speed.x
+
+        self.cam.pos.y += pj_direction_y * self.pj.speed.y
+        y_tiles = self.get_drawable_tiles()
+        if self.pj.rect.collidelist([t for t in y_tiles if t.solid]) >= 0:
+            self.cam.pos.y -= pj_direction_y * self.pj.speed.y
 
     def draw(self):
         self.cam.screen.fill(self.black)
-        self.draw_map()
+        tiles = self.get_drawable_tiles()
+        self.draw_map(tiles)
         pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)
         pygame.display.flip()
 
-    def draw_map(self):
+    def get_drawable_tiles(self):
         tiles_in_cam = self.tile_map.get_tiles(
             self.cam.pos, self.cam.cam_tiles())
-        for tile in tiles_in_cam:
-            screen_tile_pos = BalaRect(
+        drawable_tiles = [
+            BalaRect(
                 tile.x - self.cam.pos.x, tile.y - self.cam.pos.y,
-                tile.width, tile.color,
+                tile.width, tile.color, tile.solid
             )
-            pygame.draw.rect(
-                self.cam.screen, screen_tile_pos.color, screen_tile_pos)
+            for tile in tiles_in_cam
+        ]
+        return drawable_tiles
+
+    def draw_map(self, tiles):
+        for tile in tiles:
+            pygame.draw.rect(self.cam.screen, tile.color, tile)
 
     def get_pj_single_axis_movement(self, axis, negative_key, positive_key):
         pressed_keys = pygame.key.get_pressed()
