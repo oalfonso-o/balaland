@@ -93,7 +93,7 @@ class Pj:
     color = (100, 175, 220)
 
     def __init__(self, cam):
-        self.speed = pygame.math.Vector2(20, 20)
+        self.speed = pygame.math.Vector2(30, 30)
         self.direction = pygame.math.Vector2(0, 0)
         self.size = 50
         self.pos = self._cam_centered_position(cam.width)
@@ -139,49 +139,42 @@ class Balaland:
             'y', pygame.K_w, pygame.K_s)
 
         if pj_direction_x:
-            self.handle_x_collisions(pj_direction_x)
+            self.handle_collisions('x', pj_direction_x)
         if pj_direction_y:
-            self.handle_y_collisions(pj_direction_y)
+            self.handle_collisions('y', pj_direction_y)
 
-    def handle_x_collisions(self, pj_direction_x):
-        self.cam.pos.x += pj_direction_x * self.pj.speed.x
-        x_tiles = self.get_drawable_tiles()
-        x_solid_tiles = [t for t in x_tiles if t.solid]
-        x_collide_tile = self.pj.rect.collidelist(x_solid_tiles)
-        if x_collide_tile >= 0:
-            x_collide_rect = x_solid_tiles[x_collide_tile]
+    def handle_collisions(self, axis, direction):
+        new_cam_pos = (
+            getattr(self.cam.pos, axis)
+            + (direction * getattr(self.pj.speed, axis))
+        )
+        setattr(self.cam.pos, axis, new_cam_pos)
+        tiles = self.get_drawable_tiles()
+        solid_tiles = [t for t in tiles if t.solid]
+        collide_tile = self.pj.rect.collidelist(solid_tiles)
+        if collide_tile >= 0:
+            side = 'width' if axis == 'x' else 'height'
+            collide_rect = solid_tiles[collide_tile]
+            collide_rect_axis = getattr(collide_rect, axis)
+            collide_rect_size = getattr(collide_rect, side)
             pj_center = self.pj.get_center_position()
-            left_dist = abs(pj_center.x - x_collide_rect.x)
-            right_dist = abs(
-                pj_center.x - x_collide_rect.x - x_collide_rect.width)
-            if left_dist < right_dist:
-                # collision on left side, correct it
-                self.cam.pos.x -= (
-                    abs(self.pj.pos.x + self.pj.size - x_collide_rect.x))
+            pj_center_axis = getattr(pj_center, axis)
+            pj_pos_axis = getattr(self.pj.pos, axis)
+            negative_dist = abs(pj_center_axis - collide_rect_axis)
+            positive_dist = abs(
+                pj_center_axis - collide_rect_axis - collide_rect_size)
+            if negative_dist < positive_dist:
+                fixed_cam_pos = (
+                    getattr(self.cam.pos, axis)
+                    - abs(pj_pos_axis + self.pj.size - collide_rect_axis)
+                )
+                setattr(self.cam.pos, axis, fixed_cam_pos)
             else:
-                # collision on right side, correct it
-                self.cam.pos.x += abs(
-                    x_collide_rect.x + x_collide_rect.width - self.pj.pos.x)
-
-    def handle_y_collisions(self, pj_direction_y):
-        self.cam.pos.y += pj_direction_y * self.pj.speed.y
-        y_tiles = self.get_drawable_tiles()
-        y_solid_tiles = [t for t in y_tiles if t.solid]
-        y_collide_tile = self.pj.rect.collidelist(y_solid_tiles)
-        if y_collide_tile >= 0:
-            y_collide_rect = y_solid_tiles[y_collide_tile]
-            pj_center = self.pj.get_center_position()
-            top_dist = abs(pj_center.y - y_collide_rect.y)
-            bottom_dist = abs(
-                pj_center.y - y_collide_rect.y - y_collide_rect.height)
-            if top_dist < bottom_dist:
-                # collision on top side, correct it
-                self.cam.pos.y -= (
-                    abs(self.pj.pos.y + self.pj.size - y_collide_rect.y))
-            else:
-                # collision on bottom side, correct it
-                self.cam.pos.y += abs(
-                    y_collide_rect.y + y_collide_rect.height - self.pj.pos.y)
+                fixed_cam_pos = (
+                    getattr(self.cam.pos, axis)
+                    + abs(collide_rect_axis + collide_rect_size - pj_pos_axis)
+                )
+                setattr(self.cam.pos, axis, fixed_cam_pos)
 
     def draw(self):
         self.cam.screen.fill(self.black)
