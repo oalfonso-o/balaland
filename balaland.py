@@ -234,11 +234,16 @@ class MovementHandler:
         tiles = self.balaland.tile_map.get_tiles(
             self.cam.pos, self.cam.cam_tiles())
         solid_tiles = [t for t in tiles if t.solid]
-        for id_, projectile in enumerate(self.projectiles.copy()):
+        collided_projectiles = []
+        for id_, projectile in enumerate(self.projectiles):
             collision = self.update_projectile_position(
                 solid_tiles, projectile)
             if collision:
-                self.stop_projectile(id_)
+                collided_projectiles.append(projectile)
+        for projectile in collided_projectiles:
+            collided_projectile = self.projectiles.pop(
+                self.projectiles.index(projectile))
+            self.collided_projectiles.append(collided_projectile)
 
     def update_projectile_position(self, solid_tiles, projectile):
         projectile.x += projectile.movement.x
@@ -282,9 +287,6 @@ class MovementHandler:
                 setattr(projectile, axis, fixed_projectile_axis)
             return True
         return False
-
-    def stop_projectile(self, id_):
-        self.collided_projectiles.append(self.projectiles.pop(id_))
 
 
 class Balaland:
