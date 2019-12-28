@@ -15,21 +15,23 @@ class BalalandRect(pygame.Rect):
 
 
 class ProjectileRect(BalalandRect):
-    def __init__(self, pj, mouse_pos):
-        self.pj = pj
-        self.shoted_from = pygame.math.Vector2(pj.pos.x, pj.pos.y)
-        self.pos = self.shoted_from
-        self.direction = (self.shoted_from - mouse_pos).normalize()
-        self.speed = 30
-        self.new_pos_vector = pygame.math.Vector2(
-            -(self.direction.x * self.speed),
-            -(self.direction.y * self.speed),
-        )
-        super().__init__(pj.pos.x, pj.pos.y, 5, (0, 0, 0,), True)
+    def __init__(self, x, y, mouse_pos=None, pj_pos=None):
+        if mouse_pos and pj_pos:
+            self.direction = (
+                pygame.math.Vector2(pj_pos.x, pj_pos.y) - mouse_pos
+            ).normalize()
+            self.speed = 30
+            self.movement = pygame.math.Vector2(
+                - (self.direction.x * self.speed),
+                - (self.direction.y * self.speed),
+            )
+        super().__init__(x, y, 5, (0, 0, 0,), True)
 
-    def update_position(self):
-        self.x += self.new_pos_vector.x
-        self.y += self.new_pos_vector.y
+    def get_center_map_pos(self):
+        return pygame.math.Vector2(
+            self.x + self.size[0] // 2,
+            self.y + self.size[1] // 2,
+        )
 
 
 class TileMap:
@@ -85,7 +87,7 @@ class Cam:
             int(os.environ.get('BL_CAM_POS_START_X')),
             int(os.environ.get('BL_CAM_POS_START_Y')),
         )
-        self.width = tile_map.tile_size * self.size + tile_map.tile_size
+        self.width = tile_map.tile_size * self.size + tile_map.tile_size   # TODO: review this
         self.screen = pygame.display.set_mode((self.width, self.width))
         self.map_width = tile_map.width * tile_map.tile_size
         self.map_height = tile_map.height * tile_map.tile_size
@@ -114,6 +116,12 @@ class Cam:
     def move_pos_limit(self, axis, direction):
         setattr(self.pos, axis, self.limit_pos[axis][direction])
 
+    def get_center_map_pos(self):
+        return pygame.math.Vector2(
+            self.pos.x + self.width // 2,
+            self.pos.y + self.width // 2,
+        )
+
 
 class Pj:
     color = (100, 175, 220)
@@ -125,20 +133,17 @@ class Pj:
         )
         self.direction = pygame.math.Vector2(0, 0)
         self.size = int(os.environ.get('BL_PJ_SIZE'))
-        self.pos = self._cam_centered_position(cam.width)
+        self.pos = self.cam_centered_position(cam.width)
         self.rect = BalalandRect(
             self.pos.x, self.pos.y, self.size, self.color, True)
         cam.update_limit_pos(self.size)
 
-    def _cam_centered_position(self, cam_width):
+    def cam_centered_position(self, cam_width):
         center = (cam_width // 2) - (self.size // 2)
         return pygame.math.Vector2(center, center)
 
     def get_center_position(self):
         return self.pos + pygame.math.Vector2(self.size // 2, self.size // 2)
-
-    def get_bottom_right_position(self):
-        return self.pos + pygame.math.Vector2(self.size, self.size)
 
 
 class MovementHandler:
@@ -147,6 +152,7 @@ class MovementHandler:
         self.cam = self.balaland.cam
         self.pj = self.balaland.pj
         self.projectiles = []
+        self.collided_projectiles = []
 
     def move(self):
         self.handle_pj_movement()
@@ -225,8 +231,60 @@ class MovementHandler:
                 setattr(self.cam.pos, axis, fixed_cam_pos)
 
     def handle_projectiles(self):
-        for projectile in self.projectiles:
-            projectile.update_position()
+        tiles = self.balaland.tile_map.get_tiles(
+            self.cam.pos, self.cam.cam_tiles())
+        solid_tiles = [t for t in tiles if t.solid]
+        for id_, projectile in enumerate(self.projectiles.copy()):
+            collision = self.update_projectile_position(
+                solid_tiles, projectile)
+            if collision:
+                self.stop_projectile(id_)
+
+    def update_projectile_position(self, solid_tiles, projectile):
+        projectile.x += projectile.movement.x
+        collision_x = self.projectile_collision('x', solid_tiles, projectile)
+        projectile.y += projectile.movement.y
+        collision_y = self.projectile_collision('y', solid_tiles, projectile)
+        return collision_x or collision_y
+
+    def projectile_collision(self, axis, solid_tiles, projectile):
+        collide_tile = projectile.collidelist(solid_tiles)
+        if collide_tile >= 0:
+            side = 'width' if axis == 'x' else 'height'
+            collide_rect = solid_tiles[collide_tile]
+            collide_rect_axis = getattr(collide_rect, axis)
+            collide_rect_size = getattr(collide_rect, side)
+            projectile_center = projectile.get_center_map_pos()
+            projectile_center_axis = getattr(projectile_center, axis)
+            projectile_axis = getattr(projectile, axis)
+            negative_dist = abs(projectile_center_axis - collide_rect_axis)
+            positive_dist = abs(
+                projectile_center_axis - collide_rect_axis - collide_rect_size)
+            if negative_dist < positive_dist:
+                fixed_projectile_axis = (
+                    getattr(projectile, axis)
+                    - abs(
+                        projectile_axis
+                        + projectile.size[0]
+                        - collide_rect_axis
+                    )
+                )
+                setattr(projectile, axis, fixed_projectile_axis)
+            else:
+                fixed_projectile_axis = (
+                    getattr(projectile, axis)
+                    + abs(
+                        collide_rect_axis
+                        + collide_rect_size
+                        - projectile_axis
+                    )
+                )
+                setattr(projectile, axis, fixed_projectile_axis)
+            return True
+        return False
+
+    def stop_projectile(self, id_):
+        self.collided_projectiles.append(self.projectiles.pop(id_))
 
 
 class Balaland:
@@ -234,7 +292,7 @@ class Balaland:
 
     def __init__(self):
         pygame.init()
-        pygame.event.set_grab(True)
+        pygame.event.set_grab(False)  # TODO: set true
         cursor = pygame.cursors.compile(
             CROSSHAIR, black='#', white='.', xor='o')
         pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
@@ -259,13 +317,17 @@ class Balaland:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
+                elif event.key == pygame.K_LALT or event.key == pygame.K_RALT:
+                    pygame.event.set_grab(not pygame.event.get_grab())
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.handle_mouse_event(event)
 
     def handle_mouse_event(self, event):
         mouse_pos = pygame.mouse.get_pos()
-        projectile = ProjectileRect(self.pj, mouse_pos)
+        center_map_pos = self.cam.get_center_map_pos()
+        projectile = ProjectileRect(
+            center_map_pos.x, center_map_pos.y, mouse_pos, self.pj.pos)
         self.movement_handler.projectiles.append(projectile)
 
     def draw(self):
@@ -282,21 +344,29 @@ class Balaland:
     def get_drawable_tiles(self):
         tiles_in_cam = self.tile_map.get_tiles(
             self.cam.pos, self.cam.cam_tiles())
-        drawable_tiles = [
+        return (
             BalalandRect(
                 tile.x - self.cam.pos.x, tile.y - self.cam.pos.y,
                 tile.width, tile.color, tile.solid
             )
             for tile in tiles_in_cam
-        ]
-        return drawable_tiles
+        )
 
     def draw_pj(self):
         pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)
 
     def draw_projectiles(self):
-        for projectile in self.movement_handler.projectiles:
+        for projectile in self.get_drawable_projectiles():
             pygame.draw.rect(self.cam.screen, projectile.color, projectile)
+
+    def get_drawable_projectiles(self):
+        return (
+            ProjectileRect(p.x - self.cam.pos.x, p.y - self.cam.pos.y)
+            for p in (
+                self.movement_handler.projectiles
+                + self.movement_handler.collided_projectiles
+            )
+        )
 
 
 if __name__ == '__main__':
