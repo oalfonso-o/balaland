@@ -241,7 +241,12 @@ class Balaland:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            self.handle_mouse_event(event)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.handle_mouse_event(event)
 
     def handle_mouse_event(self, event):
         mouse_pos = pygame.mouse.get_pos()
@@ -279,6 +284,7 @@ class Balaland:
 if __name__ == '__main__':
     load_dotenv()
     pygame.init()
+    pygame.event.set_grab(True)
     balaland = Balaland()
     while True:
         balaland.update()
