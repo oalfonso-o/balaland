@@ -141,36 +141,16 @@ class Pj:
         return self.pos + pygame.math.Vector2(self.size, self.size)
 
 
-class Balaland:
-    black = 0, 0, 0
-
-    def __init__(self):
-        pygame.init()
-        pygame.event.set_grab(True)
-        cursor = pygame.cursors.compile(
-            CROSSHAIR, black='#', white='.', xor='o')
-        pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
-        self.tile_map = TileMap()
-        self.cam = Cam(self.tile_map)
-        self.pj = Pj(self.cam)
-        self.clock = pygame.time.Clock()
+class MovementHandler:
+    def __init__(self, balaland):
+        self.balaland = balaland
+        self.cam = self.balaland.cam
+        self.pj = self.balaland.pj
         self.projectiles = []
-
-    def update(self):
-        self.move()
-        self.draw()
 
     def move(self):
         self.handle_pj_movement()
-        self.handle_events()
         self.handle_projectiles()
-
-    def draw(self):
-        self.cam.screen.fill(self.black)
-        self.draw_map()
-        self.draw_pj()
-        self.draw_projectiles()
-        pygame.display.flip()
 
     def handle_pj_movement(self):
         pj_direction_x = self.get_pj_axis_movement(
@@ -217,7 +197,7 @@ class Balaland:
             + (direction * getattr(self.pj.speed, axis))
         )
         setattr(self.cam.pos, axis, new_cam_pos)
-        tiles = self.get_drawable_tiles()
+        tiles = self.balaland.get_drawable_tiles()
         solid_tiles = [t for t in tiles if t.solid]
         collide_tile = self.pj.rect.collidelist(solid_tiles)
         if collide_tile >= 0:
@@ -244,6 +224,34 @@ class Balaland:
                 )
                 setattr(self.cam.pos, axis, fixed_cam_pos)
 
+    def handle_projectiles(self):
+        for projectile in self.projectiles:
+            projectile.update_position()
+
+
+class Balaland:
+    black = 0, 0, 0
+
+    def __init__(self):
+        pygame.init()
+        pygame.event.set_grab(True)
+        cursor = pygame.cursors.compile(
+            CROSSHAIR, black='#', white='.', xor='o')
+        pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
+        self.tile_map = TileMap()
+        self.cam = Cam(self.tile_map)
+        self.pj = Pj(self.cam)
+        self.clock = pygame.time.Clock()
+        self.movement_handler = MovementHandler(self)
+
+    def update(self):
+        self.move()
+        self.draw()
+
+    def move(self):
+        self.movement_handler.move()
+        self.handle_events()
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -258,11 +266,14 @@ class Balaland:
     def handle_mouse_event(self, event):
         mouse_pos = pygame.mouse.get_pos()
         projectile = ProjectileRect(self.pj, mouse_pos)
-        self.projectiles.append(projectile)
+        self.movement_handler.projectiles.append(projectile)
 
-    def handle_projectiles(self):
-        for projectile in self.projectiles:
-            projectile.update_position()
+    def draw(self):
+        self.cam.screen.fill(self.black)
+        self.draw_map()
+        self.draw_pj()
+        self.draw_projectiles()
+        pygame.display.flip()
 
     def draw_map(self):
         for tile in self.get_drawable_tiles():
@@ -284,7 +295,7 @@ class Balaland:
         pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)
 
     def draw_projectiles(self):
-        for projectile in self.projectiles:
+        for projectile in self.movement_handler.projectiles:
             pygame.draw.rect(self.cam.screen, projectile.color, projectile)
 
 
