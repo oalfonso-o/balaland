@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 
 import pygame
 
+from cursor import CROSSHAIR
+
 
 class BalalandRect(pygame.Rect):
     def __init__(self, x, y, size, color, solid=False):
@@ -285,6 +287,8 @@ if __name__ == '__main__':
     load_dotenv()
     pygame.init()
     pygame.event.set_grab(True)
+    cursor = pygame.cursors.compile(CROSSHAIR, black='#', white='.', xor='o')
+    pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
     balaland = Balaland()
     while True:
         balaland.update()
