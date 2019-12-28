@@ -58,7 +58,7 @@ class TileMap:
 class Cam:
     def __init__(self, tile_map):
         self.size = 3  # radius from pj to end of cam in tiles
-        self.pos = pygame.math.Vector2(0, 0)
+        self.pos = pygame.math.Vector2(-30, -30)
         self.width = tile_map.tile_size * self.size + tile_map.tile_size
         self.screen = pygame.display.set_mode((self.width, self.width))
         self.map_width = tile_map.width * tile_map.tile_size
@@ -93,7 +93,7 @@ class Pj:
     color = (100, 175, 220)
 
     def __init__(self, cam):
-        self.speed = pygame.math.Vector2(100, 100)
+        self.speed = pygame.math.Vector2(20, 20)
         self.direction = pygame.math.Vector2(0, 0)
         self.size = 50
         self.pos = self._cam_centered_position(cam.width)
@@ -104,6 +104,12 @@ class Pj:
     def _cam_centered_position(self, cam_width):
         center = (cam_width // 2) - (self.size // 2)
         return pygame.math.Vector2(center, center)
+
+    def get_center_position(self):
+        return self.pos + pygame.math.Vector2(self.size // 2, self.size // 2)
+
+    def get_bottom_right_position(self):
+        return self.pos + pygame.math.Vector2(self.size, self.size)
 
 
 class Balaland:
@@ -132,15 +138,50 @@ class Balaland:
         pj_direction_y = self.get_pj_single_axis_movement(
             'y', pygame.K_w, pygame.K_s)
 
+        if pj_direction_x:
+            self.handle_x_collisions(pj_direction_x)
+        if pj_direction_y:
+            self.handle_y_collisions(pj_direction_y)
+
+    def handle_x_collisions(self, pj_direction_x):
         self.cam.pos.x += pj_direction_x * self.pj.speed.x
         x_tiles = self.get_drawable_tiles()
-        if self.pj.rect.collidelist([t for t in x_tiles if t.solid]) >= 0:
-            self.cam.pos.x -= pj_direction_x * self.pj.speed.x
+        x_solid_tiles = [t for t in x_tiles if t.solid]
+        x_collide_tile = self.pj.rect.collidelist(x_solid_tiles)
+        if x_collide_tile >= 0:
+            x_collide_rect = x_solid_tiles[x_collide_tile]
+            pj_center = self.pj.get_center_position()
+            left_dist = abs(pj_center.x - x_collide_rect.x)
+            right_dist = abs(
+                pj_center.x - x_collide_rect.x - x_collide_rect.width)
+            if left_dist < right_dist:
+                # collision on left side, correct it
+                self.cam.pos.x -= (
+                    abs(self.pj.pos.x + self.pj.size - x_collide_rect.x))
+            else:
+                # collision on right side, correct it
+                self.cam.pos.x += abs(
+                    x_collide_rect.x + x_collide_rect.width - self.pj.pos.x)
 
+    def handle_y_collisions(self, pj_direction_y):
         self.cam.pos.y += pj_direction_y * self.pj.speed.y
         y_tiles = self.get_drawable_tiles()
-        if self.pj.rect.collidelist([t for t in y_tiles if t.solid]) >= 0:
-            self.cam.pos.y -= pj_direction_y * self.pj.speed.y
+        y_solid_tiles = [t for t in y_tiles if t.solid]
+        y_collide_tile = self.pj.rect.collidelist(y_solid_tiles)
+        if y_collide_tile >= 0:
+            y_collide_rect = y_solid_tiles[y_collide_tile]
+            pj_center = self.pj.get_center_position()
+            top_dist = abs(pj_center.y - y_collide_rect.y)
+            bottom_dist = abs(
+                pj_center.y - y_collide_rect.y - y_collide_rect.height)
+            if top_dist < bottom_dist:
+                # collision on top side, correct it
+                self.cam.pos.y -= (
+                    abs(self.pj.pos.y + self.pj.size - y_collide_rect.y))
+            else:
+                # collision on bottom side, correct it
+                self.cam.pos.y += abs(
+                    y_collide_rect.y + y_collide_rect.height - self.pj.pos.y)
 
     def draw(self):
         self.cam.screen.fill(self.black)
