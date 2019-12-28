@@ -145,6 +145,11 @@ class Balaland:
     black = 0, 0, 0
 
     def __init__(self):
+        pygame.init()
+        pygame.event.set_grab(True)
+        cursor = pygame.cursors.compile(
+            CROSSHAIR, black='#', white='.', xor='o')
+        pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
         self.tile_map = TileMap()
         self.cam = Cam(self.tile_map)
         self.pj = Pj(self.cam)
@@ -285,10 +290,6 @@ class Balaland:
 
 if __name__ == '__main__':
     load_dotenv()
-    pygame.init()
-    pygame.event.set_grab(True)
-    cursor = pygame.cursors.compile(CROSSHAIR, black='#', white='.', xor='o')
-    pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
     balaland = Balaland()
     while True:
         balaland.update()
