@@ -1,4 +1,7 @@
 import sys
+import os
+from dotenv import load_dotenv
+
 import pygame
 
 
@@ -14,7 +17,7 @@ class TileMap:
     white = 255, 255, 255
 
     def __init__(self):
-        self.tile_size = 200
+        self.tile_size = int(os.environ.get('BL_TILE_MAP_TILE_SIZE'))
         self.safety_tiles = 1
         self.map = self.load_map()
         self.width = len(self.map)
@@ -57,8 +60,11 @@ class TileMap:
 
 class Cam:
     def __init__(self, tile_map):
-        self.size = 3  # radius from pj to end of cam in tiles
-        self.pos = pygame.math.Vector2(-30, -30)
+        self.size = int(os.environ.get('BL_CAM_SIZE'))
+        self.pos = pygame.math.Vector2(
+            int(os.environ.get('BL_CAM_POS_START_X')),
+            int(os.environ.get('BL_CAM_POS_START_Y')),
+        )
         self.width = tile_map.tile_size * self.size + tile_map.tile_size
         self.screen = pygame.display.set_mode((self.width, self.width))
         self.map_width = tile_map.width * tile_map.tile_size
@@ -93,9 +99,12 @@ class Pj:
     color = (100, 175, 220)
 
     def __init__(self, cam):
-        self.speed = pygame.math.Vector2(30, 30)
+        self.speed = pygame.math.Vector2(
+            int(os.environ.get('BL_PJ_SPEED_X')),
+            int(os.environ.get('BL_PJ_SPEED_Y')),
+        )
         self.direction = pygame.math.Vector2(0, 0)
-        self.size = 50
+        self.size = int(os.environ.get('BL_PJ_SIZE'))
         self.pos = self._cam_centered_position(cam.width)
         self.rect = BalaRect(
             self.pos.x, self.pos.y, self.size, self.color, True)
@@ -229,8 +238,9 @@ class Balaland:
 
 
 if __name__ == '__main__':
+    load_dotenv()
     pygame.init()
     balaland = Balaland()
     while True:
         balaland.run()
-        balaland.clock.tick(40)
+        balaland.clock.tick(int(os.environ.get('BL_CLOCK_TICK')))
