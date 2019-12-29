@@ -11,7 +11,9 @@ class Cam:
             int(os.environ.get('BL_CAM_POS_START_Y')),
         )
         # TODO: review this
-        self.width = tile_map.tile_size * self.size + tile_map.tile_size
+        self.width = self.height = (
+            (tile_map.tile_size * self.size) + tile_map.tile_size
+        )
         self.screen = pygame.display.set_mode((self.width, self.width))
         self.map_width = tile_map.width * tile_map.tile_size
         self.map_height = tile_map.height * tile_map.tile_size

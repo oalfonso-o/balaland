@@ -23,10 +23,11 @@ class CenterPosRect(BalalandRect):
 
 
 class ProjectileRect(CenterPosRect):
-    def __init__(self, x, y, mouse_pos=None, pj_pos=None):  # TODO: pj center position
-        if mouse_pos and pj_pos:
+    # TODO: pj center position
+    def __init__(self, x, y, mouse_pos=None, pj_x=None, pj_y=None):
+        if mouse_pos and pj_x and pj_y:
             self.direction = (
-                pygame.math.Vector2(pj_pos.x, pj_pos.y) - mouse_pos
+                pygame.math.Vector2(pj_x, pj_y) - mouse_pos
             ).normalize()
             self.speed = float(os.environ.get('BL_PROJECTILE_SPEED'))
             self.movement = pygame.math.Vector2(
@@ -63,10 +64,12 @@ class Pj(LivingRect):
     weapon_color = (0, 0, 0)
 
     def __init__(self, cam):
-        self.size = int(os.environ.get('BL_PJ_SIZE'))
+        self.width = self.height = int(os.environ.get('BL_PJ_SIZE'))
         # TODO: set respawn in place by map, with this method Pj can respawn
         # in a collisionable rect
-        self._center_pj_in_cam(cam.width)  # TODO: use also height
+        # TODO: use also height
+        self.x = (cam.width / 2) - (self.width / 2)
+        self.y = (cam.height / 2) - (self.height / 2)
         self.center_pos = self._real_center_pos()
         self.speed = pygame.math.Vector2(
             int(os.environ.get('BL_PJ_SPEED_X')),
@@ -75,31 +78,30 @@ class Pj(LivingRect):
         self.color = self.pj_color
         self.weapon_scale = int(os.environ.get('BL_PJ_WEAPON_SCALE'))
         self.weapon = pygame.Rect(
-            self.pos.x, self.pos.y,
+            self.x, self.y,
             int(os.environ.get('BL_PJ_WEAPON_WIDTH')),
             int(os.environ.get('BL_PJ_WEAPON_HEIGHT')),
         )
-        cam.update_limit_pos(self.size)
+        cam.update_limit_pos(self.width)
         super().__init__(
-            int(self.x), int(self.y), self.size, self.color, True)
-
-    def _center_pj_in_cam(self, cam_width):
-        center = (cam_width / 2) - (self.size / 2)
-        return pygame.math.Vector2(center, center)
+            int(self.x), int(self.y), self.width, self.color, True)
 
     def _real_center_pos(self):
-        return self.pos + pygame.math.Vector2(self.size / 2, self.size / 2)
+        return pygame.math.Vector2(
+            self.x + self.width / 2,
+            self.y + self.height / 2,
+        )
 
     def update_weapon_position(self):
         mouse_pos = pygame.mouse.get_pos()
-        direction = (self.self.center_pos - mouse_pos).normalize()
+        direction = (self.center_pos - mouse_pos).normalize()
         self.weapon.x = (
-            self.self.center_pos.x
+            self.center_pos.x
             + (direction.x * self.weapon_scale)
             - (self.weapon.width / 2)
         )
         self.weapon.y = (
-            self.self.center_pos.y
+            self.center_pos.y
             + (direction.y * self.weapon_scale)
             - (self.weapon.height / 2)
         )

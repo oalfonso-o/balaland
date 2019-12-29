@@ -48,7 +48,10 @@ class BalalandGame:
         mouse_pos = pygame.mouse.get_pos()
         center_map_pos = self.cam.get_center_map_pos()
         projectile = balaland.ProjectileRect(
-            center_map_pos.x, center_map_pos.y, mouse_pos, self.pj.pos)
+            center_map_pos.x, center_map_pos.y,
+            mouse_pos,
+            self.pj.x, self.pj.y,
+        )
         self.movement_handler.projectiles.append(projectile)
 
     def draw(self):

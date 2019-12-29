@@ -49,7 +49,7 @@ class MovementHandler:
         negative_held = pressed_keys[negative_key]
         positive_held = pressed_keys[positive_key]
         half_cam_size = self.cam.width // 2
-        half_pj_size = self.pj.size // 2
+        half_pj_size = self.pj.width // 2
         cam_axis = getattr(self.cam.pos, axis)
         speed = getattr(self.pj.speed, axis)
         negative_cam_margin = half_pj_size - half_cam_size
@@ -80,7 +80,7 @@ class MovementHandler:
             collide_rect_axis = getattr(collide_rect, axis)
             collide_rect_size = getattr(collide_rect, side)
             moving_rect_center_axis = getattr(self.pj.center_pos, axis)
-            moving_rect_axis = getattr(self.pj.pos, axis)
+            moving_rect_axis = getattr(self.pj, axis)
             negative_dist = abs(moving_rect_center_axis - collide_rect_axis)
             positive_dist = abs(
                 moving_rect_center_axis
@@ -92,7 +92,7 @@ class MovementHandler:
                     getattr(self.cam.pos, axis)
                     - abs(
                         + moving_rect_axis
-                        + self.pj.size
+                        + self.pj.width
                         - collide_rect_axis
                     )
                 )
