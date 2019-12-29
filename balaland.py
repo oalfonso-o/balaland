@@ -39,6 +39,23 @@ class ProjectileRect(BalalandRect):
         )
 
 
+class SomebodyRect(BalalandRect):
+    dead_color = 0, 0, 0
+    critical_hp_color = 140, 0, 0
+
+    def __init__(self, x, y, size, color, solid=True, hp=None):
+        super().__init__(int(x), int(y), size, color, solid)
+        self.hp = hp or int(os.environ.get('BL_SOMEBODY_DEFAULT_HP'))
+
+    def hit(self):
+        self.hp -= 1
+        if not self.hp:
+            self.color = self.dead_color
+            self.solid = False
+        elif self.hp == 1:
+            self.color = self.critical_hp_color
+
+
 class TileMap:
     solid_tile_color = 220, 200, 100
     enemy_color = 255, 0, 0
@@ -61,9 +78,9 @@ class TileMap:
                 for x, file_tile in enumerate(file_line.replace('\n', '')):
                     if file_tile == 'E':
                         self.enemies.append(
-                            BalalandRect(
-                                x * self.enemy_size, y * self.enemy_size,
-                                self.enemy_size, self.enemy_color, True
+                            SomebodyRect(
+                                x * self.tile_size, y * self.tile_size,
+                                self.enemy_size, self.enemy_color
                             )
                         )
                     tile_solid = file_tile == 'w'
@@ -270,6 +287,10 @@ class MovementHandler:
                 setattr(self.cam.pos, axis, fixed_cam_pos)
 
     def handle_projectiles(self):
+        self.handle_projectiles_and_tiles()
+        self.handle_projectiles_and_somebodies()
+
+    def handle_projectiles_and_tiles(self):
         tiles = self.balaland.tile_map.get_tiles(
             self.cam.pos, self.cam.cam_tiles())
         solid_tiles = [t for t in tiles if t.solid]
@@ -279,6 +300,9 @@ class MovementHandler:
                 solid_tiles, projectile)
             if collision:
                 collided_projectiles.append(projectile)
+        self.clean_collided_projectiles(collided_projectiles)
+
+    def clean_collided_projectiles(self, collided_projectiles):
         for projectile in collided_projectiles:
             collided_projectile = self.projectiles.pop(
                 self.projectiles.index(projectile))
@@ -326,6 +350,17 @@ class MovementHandler:
                 setattr(projectile, axis, fixed_projectile_axis)
             return True
         return False
+
+    def handle_projectiles_and_somebodies(self):
+        somebodies = self.balaland.tile_map.enemies
+        collided_projectiles = []
+        for id_, projectile in enumerate(self.projectiles):
+            collided_sombody = projectile.collidelist(somebodies)
+            if collided_sombody >= 0:
+                somebody_rect = somebodies[collided_sombody]
+                somebody_rect.hit()
+                collided_projectiles.append(projectile)
+        self.clean_collided_projectiles(collided_projectiles)
 
 
 class Balaland:
