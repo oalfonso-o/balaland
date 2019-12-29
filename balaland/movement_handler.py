@@ -29,7 +29,7 @@ class MovementHandler:
             tiles = self.balaland.get_drawable_tiles()
             solid_tiles = [t for t in tiles if t.solid]
 
-            self.handle_pj_collisions('x', solid_tiles)
+            self.handle_pj_collisions('x', solid_tiles, self.pj)
 
         if pj_direction_y:
 
@@ -41,7 +41,7 @@ class MovementHandler:
             tiles = self.balaland.get_drawable_tiles()
             solid_tiles = [t for t in tiles if t.solid]
 
-            self.handle_pj_collisions('y', solid_tiles)
+            self.handle_pj_collisions('y', solid_tiles, self.pj)
         self.pj.update_weapon_position()
 
     def get_pj_axis_movement(self, axis, negative_key, positive_key):
@@ -72,15 +72,16 @@ class MovementHandler:
             pj_direction = 0
         return pj_direction
 
-    def handle_pj_collisions(self, axis, collidable_rects):
-        collide_tile_id = self.pj.collidelist(collidable_rects)
+    def handle_pj_collisions(self, axis, collidable_rects, moving_rect):
+        collide_tile_id = moving_rect.collidelist(collidable_rects)
         if collide_tile_id >= 0:
             side = 'width' if axis == 'x' else 'height'
             collide_rect = collidable_rects[collide_tile_id]
             collide_rect_axis = getattr(collide_rect, axis)
             collide_rect_size = getattr(collide_rect, side)
-            moving_rect_center_axis = getattr(self.pj.center_pos, axis)
-            moving_rect_axis = getattr(self.pj, axis)
+            moving_rect_center_axis = getattr(moving_rect.center_pos, axis)
+            moving_rect_axis = getattr(moving_rect, axis)
+            moving_rect_size = getattr(moving_rect, side)
             negative_dist = abs(moving_rect_center_axis - collide_rect_axis)
             positive_dist = abs(
                 moving_rect_center_axis
@@ -92,7 +93,7 @@ class MovementHandler:
                     getattr(self.cam.pos, axis)
                     - abs(
                         + moving_rect_axis
-                        + self.pj.width
+                        + moving_rect_size
                         - collide_rect_axis
                     )
                 )
@@ -100,9 +101,9 @@ class MovementHandler:
                 fixed_cam_pos = (
                     getattr(self.cam.pos, axis)
                     + abs(
-                        + collide_rect_axis
-                        + collide_rect_size
                         - moving_rect_axis
+                        + collide_rect_size
+                        + collide_rect_axis
                     )
                 )
             setattr(self.cam.pos, axis, fixed_cam_pos)
