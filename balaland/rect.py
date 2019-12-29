@@ -10,7 +10,19 @@ class BalalandRect(pygame.Rect):
         self.solid = solid
 
 
-class ProjectileRect(BalalandRect):
+class CenterPosRect(BalalandRect):
+    def __init__(self, x, y, size, color, solid=False):
+        super().__init__(x, y, size, color, solid)
+        self.center_pos = self._real_center_pos()
+
+    def _real_center_pos(self):
+        return pygame.math.Vector2(
+            self.x + self.width / 2,
+            self.y + self.height / 2,
+        )
+
+
+class ProjectileRect(CenterPosRect):
     def __init__(self, x, y, mouse_pos=None, pj_pos=None):  # TODO: pj center position
         if mouse_pos and pj_pos:
             self.direction = (
@@ -27,16 +39,9 @@ class ProjectileRect(BalalandRect):
             (0, 0, 0,),
             True,
         )
-        self.center_pos = self._real_center_pos()
-
-    def _real_center_pos(self):
-        return pygame.math.Vector2(
-            self.x + self.width / 2,
-            self.y + self.height / 2,
-        )
 
 
-class SomebodyRect(BalalandRect):
+class LivingRect(CenterPosRect):
     dead_color = 0, 0, 0
     critical_hp_color = 140, 0, 0
 

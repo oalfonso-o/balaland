@@ -1,5 +1,5 @@
 from .movement_handler import MovementHandler
-from .rect import BalalandRect, ProjectileRect, SomebodyRect
+from .rect import BalalandRect, ProjectileRect, LivingRect
 from .pj import Pj
 from .cam import Cam
 from .tile_map import TileMap
@@ -8,7 +8,7 @@ __all__ = [
     'MovementHandler',
     'BalalandRect',
     'ProjectileRect',
-    'SomebodyRect',
+    'LivingRect',
     'Pj',
     'Cam',
     'TileMap',
