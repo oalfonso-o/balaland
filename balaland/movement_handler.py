@@ -132,17 +132,16 @@ class MovementHandler:
                         - collide_rect_axis
                     )
                 )
-                setattr(moving_rect, axis, fixed_moving_rect_axis)
             else:
                 fixed_moving_rect_axis = (
                     moving_rect_axis
                     + abs(
-                        + collide_rect_axis
-                        + collide_rect_size
                         - moving_rect_axis
+                        + collide_rect_size
+                        + collide_rect_axis
                     )
                 )
-                setattr(moving_rect, axis, fixed_moving_rect_axis)
+            setattr(moving_rect, axis, fixed_moving_rect_axis)
             return True
         return False
 
