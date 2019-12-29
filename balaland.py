@@ -15,7 +15,7 @@ class BalalandRect(pygame.Rect):
 
 
 class ProjectileRect(BalalandRect):
-    def __init__(self, x, y, mouse_pos=None, pj_pos=None):
+    def __init__(self, x, y, mouse_pos=None, pj_pos=None):  # TODO: pj center position
         if mouse_pos and pj_pos:
             self.direction = (
                 pygame.math.Vector2(pj_pos.x, pj_pos.y) - mouse_pos
@@ -130,7 +130,8 @@ class Cam:
 
 
 class Pj:
-    color = (100, 175, 220)
+    pj_color = (100, 175, 220)
+    weapon_color = (0, 0, 0)
 
     def __init__(self, cam):
         self.speed = pygame.math.Vector2(
@@ -139,9 +140,15 @@ class Pj:
         )
         self.direction = pygame.math.Vector2(0, 0)
         self.size = int(os.environ.get('BL_PJ_SIZE'))
+        self.weapon_scale = int(os.environ.get('BL_PJ_WEAPON_SCALE'))
         self.pos = self.cam_centered_position(cam.width)
         self.rect = BalalandRect(
-            self.pos.x, self.pos.y, self.size, self.color, True)
+            self.pos.x, self.pos.y, self.size, self.pj_color, True)
+        self.weapon = pygame.Rect(
+            self.pos.x, self.pos.y,
+            int(os.environ.get('BL_PJ_WEAPON_WIDTH')),
+            int(os.environ.get('BL_PJ_WEAPON_HEIGHT')),
+        )
         cam.update_limit_pos(self.size)
 
     def cam_centered_position(self, cam_width):
@@ -150,6 +157,20 @@ class Pj:
 
     def get_center_position(self):
         return self.pos + pygame.math.Vector2(self.size // 2, self.size // 2)
+
+    def update_weapon_position(self):
+        mouse_pos = pygame.mouse.get_pos()
+        self.direction = (self.get_center_position() - mouse_pos).normalize()
+        self.weapon.x = (
+            self.get_center_position().x
+            + (self.direction.x * self.weapon_scale)
+            - (self.weapon.width / 2)
+        )
+        self.weapon.y = (
+            self.get_center_position().y
+            + (self.direction.y * self.weapon_scale)
+            - (self.weapon.height / 2)
+        )
 
 
 class MovementHandler:
@@ -174,6 +195,7 @@ class MovementHandler:
             self.handle_pj_collisions('x', pj_direction_x)
         if pj_direction_y:
             self.handle_pj_collisions('y', pj_direction_y)
+        self.pj.update_weapon_position()
 
     def get_pj_axis_movement(self, axis, negative_key, positive_key):
         pressed_keys = pygame.key.get_pressed()
@@ -343,8 +365,8 @@ class Balaland:
     def draw(self):
         self.cam.screen.fill(self.black)
         self.draw_map()
-        self.draw_pj()
         self.draw_projectiles()
+        self.draw_pj()
         pygame.display.flip()
 
     def draw_map(self):
@@ -364,6 +386,7 @@ class Balaland:
 
     def draw_pj(self):
         pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)
+        pygame.draw.rect(self.cam.screen, self.pj.weapon_color, self.pj.weapon)
 
     def draw_projectiles(self):
         for projectile in self.get_drawable_projectiles():
