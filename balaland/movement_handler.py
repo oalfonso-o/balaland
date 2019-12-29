@@ -109,7 +109,7 @@ class MovementHandler:
         for id_, projectile in enumerate(self.projectiles):
             if collision_callback(projectile):
                 collided_projectiles.append(projectile)
-        self.clean_collided_projectiles(collided_projectiles)
+        self.set_collided_projectiles(collided_projectiles)
 
     def projectile_tile_collision(self, projectile):
         tiles = self.balaland.tile_map.get_tiles(
@@ -132,7 +132,7 @@ class MovementHandler:
             return True
         return False
 
-    def clean_collided_projectiles(self, collided_projectiles):
+    def set_collided_projectiles(self, collided_projectiles):
         for projectile in collided_projectiles:
             collided_projectile = self.projectiles.pop(
                 self.projectiles.index(projectile))
