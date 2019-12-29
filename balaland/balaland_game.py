@@ -77,6 +77,10 @@ class BalalandGame:
             for tile in tiles_in_cam
         )
 
+    def get_drawable_solid_tiles(self):
+        tiles = self.get_drawable_tiles()
+        return [t for t in tiles if t.solid]
+
     def draw_enemies(self):
         for e in self.tile_map.enemies:
             e_rect = balaland.BalalandRect(

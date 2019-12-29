@@ -18,30 +18,8 @@ class MovementHandler:
             'x', pygame.K_a, pygame.K_d)
         pj_direction_y = self.get_pj_axis_movement(
             'y', pygame.K_w, pygame.K_s)
-
-        if pj_direction_x:
-
-            new_cam_pos = (
-                getattr(self.cam.pos, 'x')
-                + (pj_direction_x * getattr(self.pj.speed, 'x'))
-            )
-            setattr(self.cam.pos, 'x', new_cam_pos)
-            tiles = self.balaland.get_drawable_tiles()
-            solid_tiles = [t for t in tiles if t.solid]
-
-            self.handle_pj_collisions('x', solid_tiles, self.pj, self.cam.pos)
-
-        if pj_direction_y:
-
-            new_cam_pos = (
-                getattr(self.cam.pos, 'y')
-                + (pj_direction_y * getattr(self.pj.speed, 'y'))
-            )
-            setattr(self.cam.pos, 'y', new_cam_pos)
-            tiles = self.balaland.get_drawable_tiles()
-            solid_tiles = [t for t in tiles if t.solid]
-
-            self.handle_pj_collisions('y', solid_tiles, self.pj, self.cam.pos)
+        self.handle_pj_movement_axis('x', pj_direction_x)
+        self.handle_pj_movement_axis('y', pj_direction_y)
         self.pj.update_weapon_position()
 
     def get_pj_axis_movement(self, axis, negative_key, positive_key):
@@ -72,44 +50,14 @@ class MovementHandler:
             pj_direction = 0
         return pj_direction
 
-    def handle_pj_collisions(
-        self, axis, collidable_rects, moving_rect, vector_to_fix_pos
-    ):
-        collide_rect_id = moving_rect.collidelist(collidable_rects)
-        if collide_rect_id >= 0:
-            side = 'width' if axis == 'x' else 'height'
-            collide_rect = collidable_rects[collide_rect_id]
-            collide_rect_axis = getattr(collide_rect, axis)
-            collide_rect_size = getattr(collide_rect, side)
-            moving_rect_center_axis = getattr(moving_rect.center_pos, axis)
-            moving_rect_axis = getattr(moving_rect, axis)
-            moving_rect_size = getattr(moving_rect, side)
-            vector_to_fix_pos_axis = getattr(vector_to_fix_pos, axis)
-            negative_dist = abs(moving_rect_center_axis - collide_rect_axis)
-            positive_dist = abs(
-                moving_rect_center_axis
-                - collide_rect_axis
-                - collide_rect_size
-            )
-            if negative_dist < positive_dist:
-                moving_rect_axis_fixed = (
-                    vector_to_fix_pos_axis
-                    - abs(
-                        + moving_rect_axis
-                        + moving_rect_size
-                        - collide_rect_axis
-                    )
-                )
-            else:
-                moving_rect_axis_fixed = (
-                    vector_to_fix_pos_axis
-                    + abs(
-                        - moving_rect_axis
-                        + collide_rect_size
-                        + collide_rect_axis
-                    )
-                )
-            setattr(vector_to_fix_pos, axis, moving_rect_axis_fixed)
+    def handle_pj_movement_axis(self, axis, direction):
+        new_cam_pos = (
+            getattr(self.cam.pos, axis)
+            + (direction * getattr(self.pj.speed, axis))
+        )
+        setattr(self.cam.pos, axis, new_cam_pos)
+        solid_tiles = self.balaland.get_drawable_solid_tiles()
+        self.rect_collision(axis, solid_tiles, self.pj, self.cam.pos)
 
     def rect_collision(
         self, axis, collidable_rects, moving_rect, vector_to_fix_pos
