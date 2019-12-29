@@ -101,28 +101,20 @@ class MovementHandler:
         return False
 
     def handle_projectiles(self):
-        self.handle_projectiles_and_tiles()
-        self.handle_projectiles_and_somebodies()
+        self.projectile_collision(self.projectile_tile_collision)
+        self.projectile_collision(self.projectile_living_collision)
 
-    def handle_projectiles_and_tiles(self):
-        tiles = self.balaland.tile_map.get_tiles(
-            self.cam.pos, self.cam.cam_tiles())
-        solid_tiles = [t for t in tiles if t.solid]
+    def projectile_collision(self, collision_callback):
         collided_projectiles = []
         for id_, projectile in enumerate(self.projectiles):
-            collision = self.update_projectile_position(
-                solid_tiles, projectile)
-            if collision:
+            if collision_callback(projectile):
                 collided_projectiles.append(projectile)
         self.clean_collided_projectiles(collided_projectiles)
 
-    def clean_collided_projectiles(self, collided_projectiles):
-        for projectile in collided_projectiles:
-            collided_projectile = self.projectiles.pop(
-                self.projectiles.index(projectile))
-            self.collided_projectiles.append(collided_projectile)
-
-    def update_projectile_position(self, solid_tiles, projectile):
+    def projectile_tile_collision(self, projectile):
+        tiles = self.balaland.tile_map.get_tiles(
+            self.cam.pos, self.cam.cam_tiles())
+        solid_tiles = [t for t in tiles if t.solid]
         projectile.x += projectile.movement.x
         collision_x = self.rect_collision(
             'x', solid_tiles, projectile, projectile)
@@ -131,13 +123,17 @@ class MovementHandler:
             'y', solid_tiles, projectile, projectile)
         return collision_x or collision_y
 
-    def handle_projectiles_and_somebodies(self):
-        somebodies = self.balaland.tile_map.enemies
-        collided_projectiles = []
-        for id_, projectile in enumerate(self.projectiles):
-            collided_sombody = projectile.collidelist(somebodies)
-            if collided_sombody >= 0:
-                somebody_rect = somebodies[collided_sombody]
-                somebody_rect.hit()
-                collided_projectiles.append(projectile)
-        self.clean_collided_projectiles(collided_projectiles)
+    def projectile_living_collision(self, projectile):
+        livings = self.balaland.tile_map.enemies
+        collided_living = projectile.collidelist(livings)
+        if collided_living >= 0:
+            somebody_rect = livings[collided_living]
+            somebody_rect.hit()
+            return True
+        return False
+
+    def clean_collided_projectiles(self, collided_projectiles):
+        for projectile in collided_projectiles:
+            collided_projectile = self.projectiles.pop(
+                self.projectiles.index(projectile))
+            self.collided_projectiles.append(collided_projectile)
