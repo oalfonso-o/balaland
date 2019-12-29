@@ -1,10 +1,9 @@
 import sys
 import os
-from dotenv import load_dotenv
 
 import pygame
 
-from cursor import CROSSHAIR
+from balaland.cursors.standard import CROSSHAIR
 
 
 class BalalandRect(pygame.Rect):
@@ -60,6 +59,8 @@ class TileMap:
     solid_tile_color = 220, 200, 100
     enemy_color = 255, 0, 0
     white = 255, 255, 255
+    maps_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'maps')
 
     def __init__(self):
         self.tile_size = int(os.environ.get('BL_TILE_MAP_TILE_SIZE'))
@@ -70,9 +71,12 @@ class TileMap:
         self.width = len(self.map)
         self.height = len(self.map)
 
-    def load_map(self, map_file='tile_map.tm'):
+    def load_map(self, map_file=None):
+        if not map_file:
+            map_file = os.environ.get('BL_TILE_MAP_DEFAULT_MAP')
+        map_file_path = os.path.join(self.maps_path, map_file)
         map_ = []
-        with open(map_file, 'r') as fd:
+        with open(map_file_path, 'r') as fd:
             for y, file_line in enumerate(fd):
                 map_row = []
                 for x, file_tile in enumerate(file_line.replace('\n', '')):
@@ -363,7 +367,7 @@ class MovementHandler:
         self.clean_collided_projectiles(collided_projectiles)
 
 
-class Balaland:
+class BalalandGame:
     black = 0, 0, 0
 
     def __init__(self):
@@ -451,11 +455,3 @@ class Balaland:
             p_rect = ProjectileRect(
                 round(p.x - self.cam.pos.x), round(p.y - self.cam.pos.y))
             pygame.draw.rect(self.cam.screen, p_rect.color, p_rect)
-
-
-if __name__ == '__main__':
-    load_dotenv()
-    balaland = Balaland()
-    while True:
-        balaland.update()
-        balaland.clock.tick(int(os.environ.get('BL_CLOCK_TICK')))
