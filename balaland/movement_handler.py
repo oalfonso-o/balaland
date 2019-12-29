@@ -10,19 +10,18 @@ class MovementHandler:
         self.collided_projectiles = []
 
     def move(self):
-        self.handle_pj_movement()
+        self.handle_pj()
+        self.handle_livings()
         self.handle_projectiles()
 
-    def handle_pj_movement(self):
-        pj_direction_x = self.get_pj_axis_movement(
-            'x', pygame.K_a, pygame.K_d)
-        pj_direction_y = self.get_pj_axis_movement(
-            'y', pygame.K_w, pygame.K_s)
-        self.handle_pj_movement_axis('x', pj_direction_x)
-        self.handle_pj_movement_axis('y', pj_direction_y)
+    def handle_pj(self):
+        pj_direction_x = self.pj_direction_axis('x', pygame.K_a, pygame.K_d)
+        pj_direction_y = self.pj_direction_axis('y', pygame.K_w, pygame.K_s)
+        self.handle_pj_axis('x', pj_direction_x)
+        self.handle_pj_axis('y', pj_direction_y)
         self.pj.update_weapon_position()
 
-    def get_pj_axis_movement(self, axis, negative_key, positive_key):
+    def pj_direction_axis(self, axis, negative_key, positive_key):
         pressed_keys = pygame.key.get_pressed()
         negative_held = pressed_keys[negative_key]
         positive_held = pressed_keys[positive_key]
@@ -50,7 +49,7 @@ class MovementHandler:
             pj_direction = 0
         return pj_direction
 
-    def handle_pj_movement_axis(self, axis, direction):
+    def handle_pj_axis(self, axis, direction):
         new_cam_pos = (
             getattr(self.cam.pos, axis)
             + (direction * getattr(self.pj.speed, axis))
@@ -99,6 +98,9 @@ class MovementHandler:
             setattr(vector_to_fix_pos, axis, moving_rect_axis_fixed)
             return True
         return False
+
+    def handle_livings(self):
+        pass
 
     def handle_projectiles(self):
         self.projectile_collision(self.projectile_tile_collision)
