@@ -397,26 +397,25 @@ class Balaland:
         )
 
     def draw_enemies(self):
-        for enemy in self.tile_map.enemies:
-            pygame.draw.rect(self.cam.screen, enemy.color, enemy)
+        for e in self.tile_map.enemies:
+            e_rect = BalalandRect(
+                round(e.x - self.cam.pos.x), round(e.y - self.cam.pos.y),
+                e.width, e.color, e.solid
+            )
+            pygame.draw.rect(self.cam.screen, e_rect.color, e_rect)
 
     def draw_pj(self):
         pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)
         pygame.draw.rect(self.cam.screen, self.pj.weapon_color, self.pj.weapon)
 
     def draw_projectiles(self):
-        for projectile in self.get_drawable_projectiles():
-            pygame.draw.rect(self.cam.screen, projectile.color, projectile)
-
-    def get_drawable_projectiles(self):
-        return (
-            ProjectileRect(
+        for p in (
+            self.movement_handler.projectiles
+            + self.movement_handler.collided_projectiles
+        ):
+            p_rect = ProjectileRect(
                 round(p.x - self.cam.pos.x), round(p.y - self.cam.pos.y))
-            for p in (
-                self.movement_handler.projectiles
-                + self.movement_handler.collided_projectiles
-            )
-        )
+            pygame.draw.rect(self.cam.screen, p_rect.color, p_rect)
 
 
 if __name__ == '__main__':
