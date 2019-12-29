@@ -27,11 +27,12 @@ class ProjectileRect(BalalandRect):
             (0, 0, 0,),
             True,
         )
+        self.center_pos = self._real_center_pos()
 
-    def get_center_map_pos(self):
+    def _real_center_pos(self):
         return pygame.math.Vector2(
-            self.x + self.size[0] / 2,
-            self.y + self.size[1] / 2,
+            self.x + self.width / 2,
+            self.y + self.height / 2,
         )
 
 
