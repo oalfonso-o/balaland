@@ -29,7 +29,7 @@ class MovementHandler:
             tiles = self.balaland.get_drawable_tiles()
             solid_tiles = [t for t in tiles if t.solid]
 
-            self.handle_pj_collisions('x', solid_tiles, self.pj)
+            self.handle_pj_collisions('x', solid_tiles, self.pj, self.cam.pos)
 
         if pj_direction_y:
 
@@ -41,7 +41,7 @@ class MovementHandler:
             tiles = self.balaland.get_drawable_tiles()
             solid_tiles = [t for t in tiles if t.solid]
 
-            self.handle_pj_collisions('y', solid_tiles, self.pj)
+            self.handle_pj_collisions('y', solid_tiles, self.pj, self.cam.pos)
         self.pj.update_weapon_position()
 
     def get_pj_axis_movement(self, axis, negative_key, positive_key):
@@ -72,43 +72,9 @@ class MovementHandler:
             pj_direction = 0
         return pj_direction
 
-    def handle_pj_collisions(self, axis, collidable_rects, moving_rect):
-        collide_tile_id = moving_rect.collidelist(collidable_rects)
-        if collide_tile_id >= 0:
-            side = 'width' if axis == 'x' else 'height'
-            collide_rect = collidable_rects[collide_tile_id]
-            collide_rect_axis = getattr(collide_rect, axis)
-            collide_rect_size = getattr(collide_rect, side)
-            moving_rect_center_axis = getattr(moving_rect.center_pos, axis)
-            moving_rect_axis = getattr(moving_rect, axis)
-            moving_rect_size = getattr(moving_rect, side)
-            negative_dist = abs(moving_rect_center_axis - collide_rect_axis)
-            positive_dist = abs(
-                moving_rect_center_axis
-                - collide_rect_axis
-                - collide_rect_size
-            )
-            if negative_dist < positive_dist:
-                fixed_cam_pos = (
-                    getattr(self.cam.pos, axis)
-                    - abs(
-                        + moving_rect_axis
-                        + moving_rect_size
-                        - collide_rect_axis
-                    )
-                )
-            else:
-                fixed_cam_pos = (
-                    getattr(self.cam.pos, axis)
-                    + abs(
-                        - moving_rect_axis
-                        + collide_rect_size
-                        + collide_rect_axis
-                    )
-                )
-            setattr(self.cam.pos, axis, fixed_cam_pos)
-
-    def rect_collision(self, axis, collidable_rects, moving_rect):
+    def handle_pj_collisions(
+        self, axis, collidable_rects, moving_rect, vector_to_fix_pos
+    ):
         collide_rect_id = moving_rect.collidelist(collidable_rects)
         if collide_rect_id >= 0:
             side = 'width' if axis == 'x' else 'height'
@@ -118,15 +84,16 @@ class MovementHandler:
             moving_rect_center_axis = getattr(moving_rect.center_pos, axis)
             moving_rect_axis = getattr(moving_rect, axis)
             moving_rect_size = getattr(moving_rect, side)
+            vector_to_fix_pos_axis = getattr(vector_to_fix_pos, axis)
             negative_dist = abs(moving_rect_center_axis - collide_rect_axis)
             positive_dist = abs(
-                + moving_rect_center_axis
+                moving_rect_center_axis
                 - collide_rect_axis
                 - collide_rect_size
             )
             if negative_dist < positive_dist:
-                fixed_moving_rect_axis = (
-                    moving_rect_axis
+                moving_rect_axis_fixed = (
+                    vector_to_fix_pos_axis
                     - abs(
                         + moving_rect_axis
                         + moving_rect_size
@@ -134,15 +101,54 @@ class MovementHandler:
                     )
                 )
             else:
-                fixed_moving_rect_axis = (
-                    moving_rect_axis
+                moving_rect_axis_fixed = (
+                    vector_to_fix_pos_axis
                     + abs(
                         - moving_rect_axis
                         + collide_rect_size
                         + collide_rect_axis
                     )
                 )
-            setattr(moving_rect, axis, fixed_moving_rect_axis)
+            setattr(vector_to_fix_pos, axis, moving_rect_axis_fixed)
+
+    def rect_collision(
+        self, axis, collidable_rects, moving_rect, vector_to_fix_pos
+    ):
+        collide_rect_id = moving_rect.collidelist(collidable_rects)
+        if collide_rect_id >= 0:
+            side = 'width' if axis == 'x' else 'height'
+            collide_rect = collidable_rects[collide_rect_id]
+            collide_rect_axis = getattr(collide_rect, axis)
+            collide_rect_size = getattr(collide_rect, side)
+            moving_rect_center_axis = getattr(moving_rect.center_pos, axis)
+            moving_rect_axis = getattr(moving_rect, axis)
+            moving_rect_size = getattr(moving_rect, side)
+            vector_to_fix_pos_axis = getattr(vector_to_fix_pos, axis)
+            negative_dist = abs(moving_rect_center_axis - collide_rect_axis)
+            positive_dist = abs(
+                + moving_rect_center_axis
+                - collide_rect_axis
+                - collide_rect_size
+            )
+            if negative_dist < positive_dist:
+                moving_rect_axis_fixed = (
+                    vector_to_fix_pos_axis
+                    - abs(
+                        + moving_rect_axis
+                        + moving_rect_size
+                        - collide_rect_axis
+                    )
+                )
+            else:
+                moving_rect_axis_fixed = (
+                    vector_to_fix_pos_axis
+                    + abs(
+                        - moving_rect_axis
+                        + collide_rect_size
+                        + collide_rect_axis
+                    )
+                )
+            setattr(vector_to_fix_pos, axis, moving_rect_axis_fixed)
             return True
         return False
 
@@ -170,9 +176,11 @@ class MovementHandler:
 
     def update_projectile_position(self, solid_tiles, projectile):
         projectile.x += projectile.movement.x
-        collision_x = self.rect_collision('x', solid_tiles, projectile)
+        collision_x = self.rect_collision(
+            'x', solid_tiles, projectile, projectile)
         projectile.y += projectile.movement.y
-        collision_y = self.rect_collision('y', solid_tiles, projectile)
+        collision_y = self.rect_collision(
+            'y', solid_tiles, projectile, projectile)
         return collision_x or collision_y
 
     def handle_projectiles_and_somebodies(self):
