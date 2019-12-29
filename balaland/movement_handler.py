@@ -119,27 +119,30 @@ class MovementHandler:
             moving_rect_size = getattr(moving_rect, side)
             negative_dist = abs(moving_rect_center_axis - collide_rect_axis)
             positive_dist = abs(
-                moving_rect_center_axis
+                + moving_rect_center_axis
                 - collide_rect_axis
                 - collide_rect_size
             )
             if negative_dist < positive_dist:
                 fixed_moving_rect_axis = (
                     moving_rect_axis
-                    + abs(
+                    - abs(
+                        + moving_rect_axis
                         + moving_rect_size
                         - collide_rect_axis
                     )
                 )
+                setattr(moving_rect, axis, fixed_moving_rect_axis)
             else:
                 fixed_moving_rect_axis = (
                     moving_rect_axis
                     + abs(
-                        + collide_rect_size
                         + collide_rect_axis
+                        + collide_rect_size
+                        - moving_rect_axis
                     )
                 )
-            setattr(moving_rect, axis, fixed_moving_rect_axis)
+                setattr(moving_rect, axis, fixed_moving_rect_axis)
             return True
         return False
 
