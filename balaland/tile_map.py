@@ -30,7 +30,7 @@ class TileMap:
                 for x, file_tile in enumerate(file_line.replace('\n', '')):
                     if file_tile == 'E':
                         self.enemies.append(
-                            balaland.LivingRect(
+                            balaland.EnemyRect(
                                 x * self.tile_size, y * self.tile_size,
                                 self.enemy_size, self.enemy_color
                             )

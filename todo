@@ -2,6 +2,7 @@ ia
     move following pj
     differenciate projectile ownership
     shot
+tests
 refactor methods, remove instance when not needed, set privates, etc
 colors library
 sounds

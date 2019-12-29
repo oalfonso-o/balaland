@@ -11,7 +11,7 @@ class MovementHandler:
 
     def move(self):
         self.handle_pj()
-        self.handle_livings()
+        self.handle_enemies()
         self.handle_projectiles()
 
     def handle_pj(self):
@@ -99,8 +99,9 @@ class MovementHandler:
             return True
         return False
 
-    def handle_livings(self):
-        pass
+    def handle_enemies(self):
+        for enemy in self.balaland.tile_map.enemies:
+            pass
 
     def handle_projectiles(self):
         self.projectile_collision(self.projectile_tile_collision)
@@ -126,7 +127,7 @@ class MovementHandler:
         return collision_x or collision_y
 
     def projectile_living_collision(self, projectile):
-        livings = self.balaland.tile_map.enemies
+        livings = [l for l in self.balaland.tile_map.enemies if l.hp]
         collided_living = projectile.collidelist(livings)
         if collided_living >= 0:
             somebody_rect = livings[collided_living]

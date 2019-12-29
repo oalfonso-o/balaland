@@ -48,7 +48,7 @@ class LivingRect(CenterPosRect):
 
     def __init__(self, x, y, size, color, solid=True, hp=None):
         super().__init__(int(x), int(y), size, color, solid)
-        self.hp = hp or int(os.environ.get('BL_SOMEBODY_DEFAULT_HP'))
+        self.hp = hp or int(os.environ.get('BL_LIVING_DEFAULT_HP'))
 
     def hit(self):
         self.hp -= 1
@@ -104,4 +104,14 @@ class Pj(LivingRect):
             self.center_pos.y
             + (direction.y * self.weapon_scale)
             - (self.weapon.height / 2)
+        )
+
+
+class EnemyRect(LivingRect):
+
+    def __init__(self, x, y, size, color):
+        super().__init__(int(x), int(y), size, color)
+        self.speed = pygame.math.Vector2(
+            int(os.environ.get('BL_ENEMY_SPEED_X')),
+            int(os.environ.get('BL_ENEMY_SPEED_Y')),
         )
