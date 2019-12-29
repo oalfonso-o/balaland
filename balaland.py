@@ -20,17 +20,22 @@ class ProjectileRect(BalalandRect):
             self.direction = (
                 pygame.math.Vector2(pj_pos.x, pj_pos.y) - mouse_pos
             ).normalize()
-            self.speed = 30
+            self.speed = float(os.environ.get('BL_PROJECTILE_SPEED'))
             self.movement = pygame.math.Vector2(
                 - (self.direction.x * self.speed),
                 - (self.direction.y * self.speed),
             )
-        super().__init__(x, y, 5, (0, 0, 0,), True)
+        super().__init__(
+            x, y,
+            int(os.environ.get('BL_PROJECTILE_SIZE')),
+            (0, 0, 0,),
+            True,
+        )
 
     def get_center_map_pos(self):
         return pygame.math.Vector2(
-            self.x + self.size[0] // 2,
-            self.y + self.size[1] // 2,
+            self.x + self.size[0] / 2,
+            self.y + self.size[1] / 2,
         )
 
 
@@ -87,7 +92,8 @@ class Cam:
             int(os.environ.get('BL_CAM_POS_START_X')),
             int(os.environ.get('BL_CAM_POS_START_Y')),
         )
-        self.width = tile_map.tile_size * self.size + tile_map.tile_size   # TODO: review this
+        # TODO: review this
+        self.width = tile_map.tile_size * self.size + tile_map.tile_size
         self.screen = pygame.display.set_mode((self.width, self.width))
         self.map_width = tile_map.width * tile_map.tile_size
         self.map_height = tile_map.height * tile_map.tile_size
@@ -320,12 +326,14 @@ class Balaland:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 elif event.key == pygame.K_LALT or event.key == pygame.K_RALT:
-                    pygame.event.set_grab(not pygame.event.get_grab())
+                    # TODO: reactivate when not debugging
+                    # pygame.event.set_grab(not pygame.event.get_grab())
+                    pass
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    self.handle_mouse_event(event)
+                    self.handle_mouse_left_click_event(event)
 
-    def handle_mouse_event(self, event):
+    def handle_mouse_left_click_event(self, event):
         mouse_pos = pygame.mouse.get_pos()
         center_map_pos = self.cam.get_center_map_pos()
         projectile = ProjectileRect(
@@ -363,7 +371,8 @@ class Balaland:
 
     def get_drawable_projectiles(self):
         return (
-            ProjectileRect(p.x - self.cam.pos.x, p.y - self.cam.pos.y)
+            ProjectileRect(
+                round(p.x - self.cam.pos.x), round(p.y - self.cam.pos.y))
             for p in (
                 self.movement_handler.projectiles
                 + self.movement_handler.collided_projectiles
