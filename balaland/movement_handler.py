@@ -73,7 +73,7 @@ class MovementHandler:
         return pj_direction
 
     def handle_pj_collisions(self, axis, collidable_rects):
-        collide_tile_id = self.pj.rect.collidelist(collidable_rects)
+        collide_tile_id = self.pj.collidelist(collidable_rects)
         if collide_tile_id >= 0:
             side = 'width' if axis == 'x' else 'height'
             collide_rect = collidable_rects[collide_tile_id]

@@ -83,7 +83,7 @@ class BalalandGame:
             pygame.draw.rect(self.cam.screen, e_rect.color, e_rect)
 
     def draw_pj(self):
-        pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)
+        pygame.draw.rect(self.cam.screen, self.pj.color, self.pj)
         pygame.draw.rect(self.cam.screen, self.pj.weapon_color, self.pj.weapon)
 
     def draw_projectiles(self):
