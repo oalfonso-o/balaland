@@ -40,12 +40,15 @@ class ProjectileRect(BalalandRect):
 
 
 class TileMap:
-    tile_color = 220, 200, 100
+    solid_tile_color = 220, 200, 100
+    enemy_color = 255, 0, 0
     white = 255, 255, 255
 
     def __init__(self):
         self.tile_size = int(os.environ.get('BL_TILE_MAP_TILE_SIZE'))
         self.safety_tiles = 1
+        self.enemy_size = int(os.environ.get('BL_PJ_SIZE'))
+        self.enemies = []
         self.map = self.load_map()
         self.width = len(self.map)
         self.height = len(self.map)
@@ -56,11 +59,19 @@ class TileMap:
             for y, file_line in enumerate(fd):
                 map_row = []
                 for x, file_tile in enumerate(file_line.replace('\n', '')):
-                    color = self.tile_color if int(file_tile) else self.white
-                    solid = bool(int(file_tile))
+                    if file_tile == 'E':
+                        self.enemies.append(
+                            BalalandRect(
+                                x * self.enemy_size, y * self.enemy_size,
+                                self.enemy_size, self.enemy_color, True
+                            )
+                        )
+                    tile_solid = file_tile == 'w'
+                    tile_color = (
+                        self.solid_tile_color if tile_solid else self.white)
                     tile_rect = BalalandRect(
                         x * self.tile_size, y * self.tile_size, self.tile_size,
-                        color, solid
+                        tile_color, tile_solid
                     )
                     map_row.append(tile_rect)
                 map_.append(map_row)
@@ -365,6 +376,7 @@ class Balaland:
     def draw(self):
         self.cam.screen.fill(self.black)
         self.draw_map()
+        self.draw_enemies()
         self.draw_projectiles()
         self.draw_pj()
         pygame.display.flip()
@@ -383,6 +395,10 @@ class Balaland:
             )
             for tile in tiles_in_cam
         )
+
+    def draw_enemies(self):
+        for enemy in self.tile_map.enemies:
+            pygame.draw.rect(self.cam.screen, enemy.color, enemy)
 
     def draw_pj(self):
         pygame.draw.rect(self.cam.screen, self.pj.rect.color, self.pj.rect)

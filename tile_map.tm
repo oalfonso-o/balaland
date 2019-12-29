@@ -1,12 +1,14 @@
-010000001010
-000000000000
-000000000010
-000100100010
-000011000010
-000011000010
-000100100010
-000000000010
-010000001000
-000000000010
-101111110110
-000000000000
+wwwwwwwwwwwwww
+w w      w w w
+w            w
+w          w w
+w   w  w   w w
+w    ww    w w
+w    ww    w w
+w   w  w   w w
+w    E     w w
+w w      w   w
+w          w w
+ww wwwwww ww w
+w    E    E  w
+wwwwwwwwwwwwww
