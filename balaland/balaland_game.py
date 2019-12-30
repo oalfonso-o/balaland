@@ -20,6 +20,11 @@ class BalalandGame:
         self.pj = balaland.Pj(self.cam)
         self.clock = pygame.time.Clock()
         self.movement_handler = balaland.MovementHandler(self)
+        self._update_node_grids()
+
+    def _update_node_grids(self):
+        for enemy in self.tile_map.enemies:
+            enemy.init_node_grid(self.tile_map, self.pj)
 
     def update(self):
         self.move()

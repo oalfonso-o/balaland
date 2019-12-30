@@ -2,6 +2,8 @@ import os
 
 import pygame
 
+import balaland
+
 
 class BalalandRect(pygame.Rect):
     def __init__(self, x, y, size, color, solid=False):
@@ -115,3 +117,7 @@ class EnemyRect(LivingRect):
             int(os.environ.get('BL_ENEMY_SPEED_X')),
             int(os.environ.get('BL_ENEMY_SPEED_Y')),
         )
+        self.node_grid = balaland.NodeGrid(self)
+
+    def init_node_grid(self, tile_map, target_rect):
+        self.node_grid.initalize(tile_map, target_rect)
