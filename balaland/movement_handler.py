@@ -101,7 +101,6 @@ class MovementHandler:
 
     def handle_enemies(self):
         for enemy in self.balaland.tile_map.enemies:
-            import pudb; pudb.set_trace()
             enemy.node_grid.update()
             direction = enemy.node_grid.get_direction()
             enemy.x += direction.x * enemy.speed.x
