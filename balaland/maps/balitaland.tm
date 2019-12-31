@@ -1,6 +1,6 @@
 wwwwwwwwwwwwww
 w w      w w w
-w            w
+w P          w
 w          w w
 w   w  w   w w
 w    ww    w w

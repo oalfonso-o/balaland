@@ -1,4 +1,5 @@
 import copy
+import datetime
 
 import pygame
 
@@ -58,9 +59,16 @@ class NodeGrid:
         self.open = [self.from_node]
         self.closed = []
         self._find_next_node()
+        self.path_find_time = datetime.datetime.now()
+        self.path_find_timedelta = datetime.timedelta(microseconds=100000)
 
     def update(self):
-        self._find_next_node()
+        half_second_from_last_find_path = (
+            (datetime.datetime.now() - self.path_find_time)
+            > self.path_find_timedelta
+        )
+        if half_second_from_last_find_path:
+            self._find_next_node()
 
     def get_direction(self):
         direction = (
@@ -78,8 +86,7 @@ class NodeGrid:
 
     def _find_next_node(self):
         while self.open and not self.target_node.parent:
-            current_node = self.open[0]
-            self.open.pop(self.open.index(current_node))
+            current_node = self.open.pop(0)
             self.closed.append(current_node)
             for neightbour in self._get_neightbours(current_node):
                 if (
@@ -93,6 +100,7 @@ class NodeGrid:
                         self.open.append(neightbour)
             self._sort_open_nodes()
         self._path_finded()
+        self.path_find_time = datetime.datetime.now()
 
     def _get_neightbours(self, node):
         neightbours = []
