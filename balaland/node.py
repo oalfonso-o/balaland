@@ -68,8 +68,10 @@ class NodeGrid:
         self._find_next_node()
 
     def get_direction(self):
+        center_next_node_x = self.next_node.x + (self.tile_map.tile_size // 2)
+        center_next_node_y = self.next_node.y + (self.tile_map.tile_size // 2)
         direction = (
-            pygame.math.Vector2(self.next_node.x, self.next_node.y)
+            pygame.math.Vector2(center_next_node_x, center_next_node_y)
             - pygame.math.Vector2(self.from_rect.x, self.from_rect.y)
         )
         if bool(direction):
