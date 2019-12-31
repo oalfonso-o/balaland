@@ -1,5 +1,5 @@
 ia
-    clean movement, no more crazy doubts between multiple paths
+    collisions with livings
     dead stop move, no more zombies
     stick bullet to enemy
     differenciate projectile ownership

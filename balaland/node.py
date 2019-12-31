@@ -160,6 +160,7 @@ class NodeGrid:
         self._reset_nodes()
 
     def _update_next_node(self):
+        # TODO: remove this painting when ia done
         for tile in self.tile_map.get_not_collidable_tiles():
             tile.color = (255, 255, 255)
         node = copy.copy(self.target_node)
@@ -168,6 +169,7 @@ class NodeGrid:
                 self.next_node = node
                 break
             node = node.parent
+            # TODO: remove this painting when ia done
             grid_x = int(node.x // self.tile_map.tile_size)
             grid_y = int(node.y // self.tile_map.tile_size)
             self.tile_map.map[grid_y][grid_x].color = (130, 1, 10)
