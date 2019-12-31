@@ -60,11 +60,7 @@ class NodeGrid:
         self._find_next_node()
 
     def update(self):
-        if (
-            self.from_node
-            != self._get_node(self.from_rect.x, self.from_rect.y)
-        ):
-            self._find_next_node()
+        self._find_next_node()
 
     def get_direction(self):
         direction = (
