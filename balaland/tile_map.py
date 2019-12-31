@@ -5,7 +5,7 @@ import balaland
 
 class TileMap:
     solid_tile_color = 220, 200, 100
-    enemy_color = 255, 0, 0
+    enemy_color = 150, 120, 0
     white = 255, 255, 255
     maps_path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 'maps')

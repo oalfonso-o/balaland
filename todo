@@ -1,12 +1,9 @@
 ia
-    collisions with livings
-    dead stop move, no more zombies
-    stick bullet to enemy
     differenciate projectile ownership
     shot
+colors library
 tests
 refactor methods, remove instance when not needed, set privates, etc
-colors library
 sounds
 multiplayer
 not need of squared maps

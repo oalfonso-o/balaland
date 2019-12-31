@@ -105,6 +105,8 @@ class MovementHandler:
 
     def handle_enemies(self):
         for enemy in self.balaland.tile_map.enemies:
+            if not enemy.hp:
+                continue
             enemy.node_grid.update()
             direction = enemy.node_grid.get_direction()
             enemy.x += (direction.x * enemy.speed.x)
@@ -147,6 +149,7 @@ class MovementHandler:
         if collided_living >= 0:
             somebody_rect = livings[collided_living]
             somebody_rect.hit()
+            projectile.hit()
             return True
         return False
 

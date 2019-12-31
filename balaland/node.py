@@ -172,7 +172,7 @@ class NodeGrid:
             # TODO: remove this painting when ia done
             grid_x = int(node.x // self.tile_map.tile_size)
             grid_y = int(node.y // self.tile_map.tile_size)
-            self.tile_map.map[grid_y][grid_x].color = (130, 1, 10)
+            self.tile_map.map[grid_y][grid_x].color = (30, 130, 100)
 
     def _reset_nodes(self):
         for node_col in self.nodes:

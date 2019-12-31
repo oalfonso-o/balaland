@@ -48,9 +48,13 @@ class ProjectileRect(CenterPosRect):
             True,
         )
 
+    def hit(self):
+        self.color = 150, 0, 0
+        self.width *= 2
+
 
 class LivingRect(CenterPosRect):
-    dead_color = 0, 0, 0
+    dead_color = 60, 0, 0
     critical_hp_color = 140, 0, 0
 
     def __init__(self, x, y, size, color, solid=True, hp=None):
