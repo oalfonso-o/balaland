@@ -1,3 +1,5 @@
+import copy
+
 import pygame
 
 
@@ -110,6 +112,12 @@ class MovementHandler:
             solid_tiles = self.balaland.get_drawable_solid_tiles()
             self.rect_collision('x', solid_tiles, enemy, enemy)
             self.rect_collision('y', solid_tiles, enemy, enemy)
+            other_enemies = copy.copy(self.balaland.tile_map.enemies)
+            del other_enemies[other_enemies.index(enemy)]
+            self.rect_collision(
+                'x', [self.pj] + other_enemies, enemy, enemy)
+            self.rect_collision(
+                'y', [self.pj] + other_enemies, enemy, enemy)
 
     def handle_projectiles(self):
         self.projectile_collision(self.projectile_tile_collision)
