@@ -5,19 +5,24 @@ import pygame
 import balaland
 
 
-class BalalandRect(pygame.Rect):
-    def __init__(self, x, y, size, color, solid=False):
-        super().__init__(int(x), int(y), size, size)
+class ColorRect(pygame.Rect):
+    def __init__(self, x, y, width, height, color):
+        super().__init__(int(x), int(y), width, height)
         self.color = color
+
+
+class BalalandRect(ColorRect):
+    def __init__(self, x, y, size, color, solid=False):
+        super().__init__(int(x), int(y), size, size, color)
         self.solid = solid
 
 
 class CenterPosRect(BalalandRect):
     def __init__(self, x, y, size, color, solid=False):
         super().__init__(x, y, size, color, solid)
-        self.center_pos = self._real_center_pos()
 
-    def _real_center_pos(self):
+    # TODO: property
+    def center_pos(self):
         return pygame.math.Vector2(
             self.x + self.width / 2,
             self.y + self.height / 2,
@@ -25,11 +30,11 @@ class CenterPosRect(BalalandRect):
 
 
 class ProjectileRect(CenterPosRect):
-    # TODO: pj center position
-    def __init__(self, x, y, mouse_pos=None, pj_x=None, pj_y=None):
-        if mouse_pos and pj_x and pj_y:
+    def __init__(self, pos, mouse_pos=None, center_screen_pos=None):
+        if mouse_pos and center_screen_pos:
             self.direction = (
-                pygame.math.Vector2(pj_x, pj_y) - mouse_pos
+                + pygame.math.Vector2(center_screen_pos.x, center_screen_pos.y)
+                - mouse_pos
             ).normalize()
             self.speed = float(os.environ.get('BL_PROJECTILE_SPEED'))
             self.movement = pygame.math.Vector2(
@@ -37,7 +42,7 @@ class ProjectileRect(CenterPosRect):
                 - (self.direction.y * self.speed),
             )
         super().__init__(
-            x, y,
+            pos.x, pos.y,
             int(os.environ.get('BL_PROJECTILE_SIZE')),
             (0, 0, 0,),
             True,
@@ -62,49 +67,37 @@ class LivingRect(CenterPosRect):
 
 
 class Pj(LivingRect):
-    pj_color = (100, 175, 220)
-    weapon_color = (0, 0, 0)
 
-    def __init__(self, cam):
+    def __init__(self, x, y):
         self.width = self.height = int(os.environ.get('BL_PJ_SIZE'))
-        # TODO: set respawn in place by map, with this method Pj can respawn
-        # in a collisionable rect
-        # TODO: use also height
-        self.x = (cam.width / 2) - (self.width / 2)
-        self.y = (cam.height / 2) - (self.height / 2)
-        self.center_pos = self._real_center_pos()
+        self.x = x
+        self.y = y
         self.speed = pygame.math.Vector2(
             int(os.environ.get('BL_PJ_SPEED_X')),
             int(os.environ.get('BL_PJ_SPEED_Y')),
         )
-        self.color = self.pj_color
-        self.weapon_scale = int(os.environ.get('BL_PJ_WEAPON_SCALE'))
-        self.weapon = pygame.Rect(
+        self.color = (100, 175, 220)
+        self.weapon_distance = int(os.environ.get('BL_PJ_WEAPON_DISTANCE'))
+        self.weapon = balaland.ColorRect(
             self.x, self.y,
             int(os.environ.get('BL_PJ_WEAPON_WIDTH')),
             int(os.environ.get('BL_PJ_WEAPON_HEIGHT')),
+            (0, 0, 0),
         )
-        cam.update_limit_pos(self.width)
         super().__init__(
             int(self.x), int(self.y), self.width, self.color, True)
 
-    def _real_center_pos(self):
-        return pygame.math.Vector2(
-            self.x + self.width / 2,
-            self.y + self.height / 2,
-        )
-
     def update_weapon_position(self):
         mouse_pos = pygame.mouse.get_pos()
-        direction = (self.center_pos - mouse_pos).normalize()
+        direction = (self.center_pos() - mouse_pos).normalize()
         self.weapon.x = (
-            self.center_pos.x
-            + (direction.x * self.weapon_scale)
+            + self.center_pos().x
+            + (direction.x * self.weapon_distance)
             - (self.weapon.width / 2)
         )
         self.weapon.y = (
-            self.center_pos.y
-            + (direction.y * self.weapon_scale)
+            + self.center_pos().y
+            + (direction.y * self.weapon_distance)
             - (self.weapon.height / 2)
         )
 

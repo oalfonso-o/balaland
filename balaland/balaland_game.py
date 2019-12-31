@@ -16,8 +16,8 @@ class BalalandGame:
             CROSSHAIR, black='#', white='.', xor='o')
         pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
         self.tile_map = balaland.TileMap()
-        self.cam = balaland.Cam(self.tile_map)
-        self.pj = balaland.Pj(self.cam)
+        self.pj = self.tile_map.pj
+        self.cam = balaland.Cam(self.tile_map, self.pj)
         self.clock = pygame.time.Clock()
         self.movement_handler = balaland.MovementHandler(self)
         self._update_node_grids()
@@ -51,12 +51,9 @@ class BalalandGame:
 
     def handle_mouse_left_click_event(self, event):
         mouse_pos = pygame.mouse.get_pos()
-        center_map_pos = self.cam.get_center_map_pos()
+        center_screen_vector = self.cam.get_center_screen_vector()
         projectile = balaland.ProjectileRect(
-            center_map_pos.x, center_map_pos.y,
-            mouse_pos,
-            self.pj.x, self.pj.y,
-        )
+            self.pj.center_pos(), mouse_pos, center_screen_vector)
         self.movement_handler.projectiles.append(projectile)
 
     def draw(self):
@@ -67,42 +64,35 @@ class BalalandGame:
         self.draw_pj()
         pygame.display.flip()
 
-    def draw_map(self):
-        for tile in self.get_drawable_tiles():
-            pygame.draw.rect(self.cam.screen, tile.color, tile)
+    def _locate_rect_in_cam(self, rect):
+        x = rect.x - self.cam.pos.x
+        y = rect.y - self.cam.pos.y
+        return balaland.BalalandRect(x, y, rect.width, rect.color)
 
-    def get_drawable_tiles(self):
-        tiles_in_cam = self.tile_map.get_tiles(
-            self.cam.pos, self.cam.cam_tiles())
-        return (
-            balaland.BalalandRect(
-                tile.x - self.cam.pos.x, tile.y - self.cam.pos.y,
-                tile.width, tile.color, tile.solid
-            )
-            for tile in tiles_in_cam
-        )
+    def draw_map(self):
+        for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
+            rect_in_cam = self._locate_rect_in_cam(tile)
+            pygame.draw.rect(self.cam.screen, rect_in_cam.color, rect_in_cam)
 
     def get_drawable_solid_tiles(self):
-        tiles = self.get_drawable_tiles()
+        tiles = self.tile_map.get_tiles(self.cam.pos, self.cam.size)
         return [t for t in tiles if t.solid]
 
     def draw_enemies(self):
-        for e in self.tile_map.enemies:
-            e_rect = balaland.BalalandRect(
-                round(e.x - self.cam.pos.x), round(e.y - self.cam.pos.y),
-                e.width, e.color, e.solid
-            )
-            pygame.draw.rect(self.cam.screen, e_rect.color, e_rect)
-
-    def draw_pj(self):
-        pygame.draw.rect(self.cam.screen, self.pj.color, self.pj)
-        pygame.draw.rect(self.cam.screen, self.pj.weapon_color, self.pj.weapon)
+        for enemy in self.tile_map.enemies:
+            rect_in_cam = self._locate_rect_in_cam(enemy)
+            pygame.draw.rect(self.cam.screen, rect_in_cam.color, rect_in_cam)
 
     def draw_projectiles(self):
-        for p in (
+        for projectile in (
             self.movement_handler.projectiles
             + self.movement_handler.collided_projectiles
         ):
-            p_rect = balaland.ProjectileRect(
-                round(p.x - self.cam.pos.x), round(p.y - self.cam.pos.y))
-            pygame.draw.rect(self.cam.screen, p_rect.color, p_rect)
+            rect_in_cam = self._locate_rect_in_cam(projectile)
+            pygame.draw.rect(self.cam.screen, rect_in_cam.color, rect_in_cam)
+
+    def draw_pj(self):
+        pj_in_cam = self._locate_rect_in_cam(self.pj)
+        weapon_in_cam = self._locate_rect_in_cam(self.pj.weapon)
+        pygame.draw.rect(self.cam.screen, pj_in_cam.color, pj_in_cam)
+        pygame.draw.rect(self.cam.screen, weapon_in_cam.color, weapon_in_cam)

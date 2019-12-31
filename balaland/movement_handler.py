@@ -25,23 +25,23 @@ class MovementHandler:
         pressed_keys = pygame.key.get_pressed()
         negative_held = pressed_keys[negative_key]
         positive_held = pressed_keys[positive_key]
-        half_cam_size = self.cam.width // 2
-        half_pj_size = self.pj.width // 2
-        cam_axis = getattr(self.cam.pos, axis)
+        size = 'width' if axis == 'x' else 'height'
+        pj_axis = getattr(self.pj, axis)
+        pj_size = getattr(self.pj, size)
         speed = getattr(self.pj.speed, axis)
-        negative_cam_margin = half_pj_size - half_cam_size
-        positive_margin = self.cam.map_width - half_cam_size - half_pj_size
+        negative_map_limit = 0
+        positive_map_limit = self.balaland.tile_map.map_width
         if negative_held and positive_held:
             pj_direction = 0
-        elif negative_held and cam_axis > negative_cam_margin:
-            if cam_axis < (negative_cam_margin + speed):
-                self.cam.move_pos_limit(axis, '-')
+        elif negative_held and pj_axis > negative_map_limit:
+            if pj_axis < (negative_map_limit + speed):
+                setattr(self.pj, axis, 0)
                 pj_direction = 0
             else:
                 pj_direction = -1
-        elif positive_held and cam_axis < positive_margin:
-            if cam_axis > (positive_margin - speed):
-                self.cam.move_pos_limit(axis, '+')
+        elif positive_held and pj_axis + pj_size < positive_map_limit:
+            if pj_axis + pj_size > (positive_map_limit - speed):
+                setattr(self.pj, axis, positive_map_limit - pj_size)
                 pj_direction = 0
             else:
                 pj_direction = 1
@@ -50,13 +50,15 @@ class MovementHandler:
         return pj_direction
 
     def handle_pj_axis(self, axis, direction):
-        new_cam_pos = (
-            getattr(self.cam.pos, axis)
+        new_pj_pos = (
+            getattr(self.pj, axis)
             + (direction * getattr(self.pj.speed, axis))
         )
-        setattr(self.cam.pos, axis, new_cam_pos)
+        setattr(self.pj, axis, new_pj_pos)
+        self.cam.follow_pj()
         solid_tiles = self.balaland.get_drawable_solid_tiles()
-        self.rect_collision(axis, solid_tiles, self.pj, self.cam.pos)
+        self.rect_collision(axis, solid_tiles, self.pj, self.pj)
+        self.cam.follow_pj()
 
     def rect_collision(
         self, axis, collidable_rects, moving_rect, vector_to_fix_pos
@@ -67,7 +69,7 @@ class MovementHandler:
             collide_rect = collidable_rects[collide_rect_id]
             collide_rect_axis = getattr(collide_rect, axis)
             collide_rect_size = getattr(collide_rect, side)
-            moving_rect_center_axis = getattr(moving_rect.center_pos, axis)
+            moving_rect_center_axis = getattr(moving_rect.center_pos(), axis)
             moving_rect_axis = getattr(moving_rect, axis)
             moving_rect_size = getattr(moving_rect, side)
             vector_to_fix_pos_axis = getattr(vector_to_fix_pos, axis)
@@ -118,8 +120,7 @@ class MovementHandler:
         self.set_collided_projectiles(collided_projectiles)
 
     def projectile_tile_collision(self, projectile):
-        tiles = self.balaland.tile_map.get_tiles(
-            self.cam.pos, self.cam.cam_tiles())
+        tiles = self.balaland.tile_map.get_tiles(self.cam.pos, self.cam.size)
         solid_tiles = [t for t in tiles if t.solid]
         projectile.x += projectile.movement.x
         collision_x = self.rect_collision(
