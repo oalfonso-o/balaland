@@ -1,7 +1,10 @@
 ia
-    move following pj
+    collisions
+    dead stop move, no more zombies
+    stick bullet to enemy
     differenciate projectile ownership
     shot
+    smooth enemy paths
 tests
 refactor methods, remove instance when not needed, set privates, etc
 colors library
