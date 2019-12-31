@@ -105,8 +105,11 @@ class MovementHandler:
         for enemy in self.balaland.tile_map.enemies:
             enemy.node_grid.update()
             direction = enemy.node_grid.get_direction()
-            enemy.x += direction.x * enemy.speed.x
-            enemy.y += direction.y * enemy.speed.y
+            enemy.x += (direction.x * enemy.speed.x)
+            enemy.y += (direction.y * enemy.speed.y)
+            solid_tiles = self.balaland.get_drawable_solid_tiles()
+            self.rect_collision('x', solid_tiles, enemy, enemy)
+            self.rect_collision('y', solid_tiles, enemy, enemy)
 
     def handle_projectiles(self):
         self.projectile_collision(self.projectile_tile_collision)
