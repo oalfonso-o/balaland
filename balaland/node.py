@@ -6,8 +6,9 @@ import pygame
 
 class Node:
     def __init__(
-        self, solid, x, y, grid_x, grid_y, g=0, h=0, parent=None
+        self, id_, solid, x, y, grid_x, grid_y, g=0, h=0, parent=None
     ):
+        self.id = id_
         self.solid = solid
         self.x = x
         self.y = y
@@ -44,12 +45,15 @@ class NodeGrid:
     def initalize(self, tile_map, target_rect):  # TODO: refactor arch
         self.target_rect = target_rect
         self.tile_map = tile_map
+        id_ = 1
         for grid_x, tile_x in enumerate(tile_map.map[0]):
             node_col = []
             for grid_y in range(len(tile_map.map)):
                 tile = tile_map.map[grid_y][grid_x]
                 solid = tile.solid
-                node_col.append(Node(solid, tile.x, tile.y, grid_x, grid_y))
+                node_col.append(
+                    Node(id_, solid, tile.x, tile.y, grid_x, grid_y))
+                id_ += 1
             self.nodes.append(node_col)
         self.grid_size_x = len(self.nodes)
         self.grid_size_y = len(self.nodes[0])
@@ -60,14 +64,14 @@ class NodeGrid:
         self.closed = []
         self._find_next_node()
         self.path_find_time = datetime.datetime.now()
-        self.path_find_timedelta = datetime.timedelta(microseconds=100000)
+        self.path_find_timedelta = datetime.timedelta(microseconds=50000)
 
     def update(self):
-        half_second_from_last_find_path = (
+        enough_time_to_find_path_again = (
             (datetime.datetime.now() - self.path_find_time)
             > self.path_find_timedelta
         )
-        if half_second_from_last_find_path:
+        if enough_time_to_find_path_again:
             self._find_next_node()
 
     def get_direction(self):
@@ -145,7 +149,7 @@ class NodeGrid:
         return (diagonals * 14) + (straights * 10)
 
     def _sort_open_nodes(self):
-        self.open = sorted(self.open, key=lambda n: n.get_f())
+        self.open = sorted(self.open, key=lambda n: (n.get_f(), n.id))
 
     def _path_finded(self):
         self.from_node = self._get_node(self.from_rect.x, self.from_rect.y)
