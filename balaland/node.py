@@ -62,6 +62,7 @@ class NodeGrid:
             self.target_rect.x, self.target_rect.y)
         self.open = [self.from_node]
         self.closed = []
+        self.next_node = None
         self._find_next_node()
         self.path_find_time = datetime.datetime.now()
         self.path_find_timedelta = datetime.timedelta(microseconds=50000)
@@ -120,6 +121,11 @@ class NodeGrid:
                     and check_y >= 0
                     and check_y < self.grid_size_y
                 ):
+                    if abs(x) and abs(y):
+                        right_n = self.nodes[0][node.grid_y]
+                        left_n = self.nodes[node.grid_x][0]
+                        if right_n.solid or left_n.solid:
+                            continue
                     neightbour = self.nodes[check_x][check_y]
                     if not neightbour.solid and neightbour not in self.closed:
                         neightbours.append(neightbour)
@@ -161,12 +167,17 @@ class NodeGrid:
         self._reset_nodes()
 
     def _update_next_node(self):
+        for tile in self.tile_map.get_not_collidable_tiles():
+            tile.color = (255, 255, 255)
         node = copy.copy(self.target_node)
         while node.parent:
             if not node.parent.parent:
                 self.next_node = node
                 break
             node = node.parent
+            grid_x = int(node.x // self.tile_map.tile_size)
+            grid_y = int(node.y // self.tile_map.tile_size)
+            self.tile_map.map[grid_y][grid_x].color = (130, 1, 10)
 
     def _reset_nodes(self):
         for node_col in self.nodes:

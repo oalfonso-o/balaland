@@ -70,3 +70,11 @@ class TileMap:
             for tile in map_row[start_tile_pos_x:end_tile_pos_x]
         ]
         return tiles
+
+    def get_not_collidable_tiles(self):
+        return [
+            tile
+            for map_row in self.map
+            for tile in map_row
+            if not tile.solid
+        ]
