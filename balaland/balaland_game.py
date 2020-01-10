@@ -43,7 +43,7 @@ class BalalandGame:
                     sys.exit()
                 elif event.key == pygame.K_LALT or event.key == pygame.K_RALT:
                     # TODO: reactivate when not debugging
-                    # pygame.event.set_grab(not pygame.event.get_grab())
+                    pygame.event.set_grab(not pygame.event.get_grab())
                     pass
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
