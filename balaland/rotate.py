@@ -1,12 +1,13 @@
 import sys
 import math
+import copy
 
 import pygame
 
-rad = math.pi / 180
-map_size = 1000
-map_size_half = int(map_size / 2)
-sensibility = 4
+RAD = math.pi / 180
+MAP_SIZE = 1000
+MAP_SIZE_HALF = int(MAP_SIZE / 2)
+SENSIBILITY = 4
 
 
 class Tile:
@@ -22,23 +23,9 @@ class Tile:
         self.rect = self.image.get_rect()
         self.rect_center = x + (size[0] / 2), y + (size[1] / 2)
         self.rect.center = self.rect_center
-        self.x_relative = x - map_size_half
-        self.y_relative = y - map_size_half
+        self.x_relative = x - MAP_SIZE_HALF
+        self.y_relative = y - MAP_SIZE_HALF
         self.angle = 0
-
-    def update(self, angle):
-        self.angle = angle
-        self.image = pygame.transform.rotate(self.original_image, - self.angle)
-        self.rect = self.image.get_rect()
-        x = (
-            (self.x_relative * math.cos(self.angle * rad))
-            - (self.y_relative * math.sin(self.angle * rad))
-        )
-        y = (
-            (self.y_relative * math.cos(self.angle * rad))
-            + (self.x_relative * math.sin(self.angle * rad))
-        )
-        self.rect.center = x + map_size_half, y + map_size_half
 
 
 def handle_events():
@@ -55,7 +42,7 @@ def handle_events():
 def main():
     pygame.init()
     pygame.event.set_grab(True)
-    screen = pygame.display.set_mode((map_size, map_size))
+    screen = pygame.display.set_mode((MAP_SIZE, MAP_SIZE))
     clock = pygame.time.Clock()
     tile1 = Tile(x=0, y=0, size=(200, 200), color=(100, 0, 0))
     tile2 = Tile(x=200, y=0, size=(200, 200), color=(0, 100, 0))
@@ -64,36 +51,52 @@ def main():
     tiles = [tile1, tile2, tile3, tile4]
     mouse_rel_x = 0
     pygame.mouse.set_visible(False)
+    pj = None
     while True:
         handle_events()
         mouse_pos = pygame.mouse.get_pos()
-        if mouse_pos[1] > map_size_half:
-            pygame.mouse.set_pos(mouse_pos[0], map_size_half)
-        mouse_pos = pygame.mouse.get_pos()
+        if mouse_pos[1] > MAP_SIZE_HALF:
+            pygame.mouse.set_pos(mouse_pos[0], MAP_SIZE_HALF)
+            mouse_pos[1] = MAP_SIZE_HALF
+
         screen.fill((255, 255, 255))
-        pygame.draw.circle(
-            screen, (0, 0, 0), (map_size_half, map_size_half), 3
-        )
-        pygame.draw.line(
-            screen,
-            (0, 0, 0),
-            (map_size_half - 5, mouse_pos[1] - 5),
-            (map_size_half + 5, mouse_pos[1] + 5),
-            1,
-        )
-        pygame.draw.line(
-            screen,
-            (0, 0, 0),
-            (map_size_half + 5, mouse_pos[1] - 5),
-            (map_size_half - 5, mouse_pos[1] + 5),
-            1,
-        )
         mouse_rel_x += pygame.mouse.get_rel()[0]
-        dist_x = map_size_half - mouse_rel_x
-        angle = (dist_x / sensibility)
+        dist_x = MAP_SIZE_HALF - mouse_rel_x
+        angle = (dist_x / SENSIBILITY)
         for tile in tiles:
-            tile.update(angle)
-            screen.blit(tile.image, tile.rect)
+            ctile = copy.copy(tile)
+            x_relative = ctile.x - pj.x
+            y_relative = ctile.y - pj.y
+            ctile.image = pygame.transform.rotate(ctile.original_image, -angle)
+            rect = ctile.image.get_rect()
+            ctile.x = rect.x
+            ctile.y = rect.y
+            x = (
+                (x_relative * math.cos(angle * RAD))
+                - (y_relative * math.sin(angle * RAD))
+            )
+            y = (
+                (y_relative * math.cos(angle * RAD))
+                + (x_relative * math.sin(angle * RAD))
+            )
+            ctile.center = x + pj.x, y + pj.y
+
+            screen.blit(ctile.image, ctile.rect)
+
+        pygame.draw.line(
+            screen,
+            (0, 0, 0),
+            (MAP_SIZE_HALF - 5, mouse_pos[1] - 5),
+            (MAP_SIZE_HALF + 5, mouse_pos[1] + 5),
+            1,
+        )
+        pygame.draw.line(
+            screen,
+            (0, 0, 0),
+            (MAP_SIZE_HALF + 5, mouse_pos[1] - 5),
+            (MAP_SIZE_HALF - 5, mouse_pos[1] + 5),
+            1,
+        )
         pygame.display.update()
 
         clock.tick(40)

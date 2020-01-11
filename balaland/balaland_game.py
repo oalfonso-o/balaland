@@ -1,26 +1,33 @@
 import sys
+import copy
+import math
 
 import pygame
 
 import balaland
-from balaland.cursors.standard import CROSSHAIR
+# from balaland.cursors.standard import CROSSHAIR
 
 
 class BalalandGame:
     black = 0, 0, 0
+    sensibility = 4
+    radians = math.pi / 180
 
     def __init__(self):
         pygame.init()
-        pygame.event.set_grab(False)  # TODO: set true
-        cursor = pygame.cursors.compile(
-            CROSSHAIR, black='#', white='.', xor='o')
-        pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
+        pygame.event.set_grab(True)
+        pygame.mouse.set_visible(False)
+        # cursor = pygame.cursors.compile(
+        #     CROSSHAIR, black='#', white='.', xor='o')
+        # pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
         self.tile_map = balaland.TileMap()
         self.pj = self.tile_map.pj
         self.cam = balaland.Cam(self.tile_map, self.pj)
         self.clock = pygame.time.Clock()
         self.movement_handler = balaland.MovementHandler(self)
         self._update_node_grids()
+        self.mouse_rel_x = 0
+        self.center_cam = self.cam.get_center_screen_vector()
 
     def _update_node_grids(self):
         for enemy in self.tile_map.enemies:
@@ -42,9 +49,7 @@ class BalalandGame:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 elif event.key == pygame.K_LALT or event.key == pygame.K_RALT:
-                    # TODO: reactivate when not debugging
                     pygame.event.set_grab(not pygame.event.get_grab())
-                    pass
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.handle_mouse_left_click_event(event)
@@ -57,17 +62,36 @@ class BalalandGame:
         self.movement_handler.projectiles.append(projectile)
 
     def draw(self):
+        self.mouse_rel_x += pygame.mouse.get_rel()[0]
+        dist_x = self.center_cam - self.mouse_rel_x
+        self.angle = (dist_x / self.sensibility)
         self.cam.screen.fill(self.black)
         self.draw_map()
         self.draw_enemies()
         self.draw_projectiles()
         self.draw_pj()
+        self.draw_crosshair()
         pygame.display.flip()
 
     def _locate_rect_in_cam(self, rect):
-        x = rect.x - self.cam.pos.x
-        y = rect.y - self.cam.pos.y
-        return balaland.BalalandRect(x, y, rect.width, rect.color)
+        relocated_rect = copy.copy(rect)
+        x_relative = relocated_rect.x - self.pj.x
+        y_relative = relocated_rect.y - self.pj.y
+        relocated_rect.image = pygame.transform.rotate(
+            relocated_rect.original_image, -self.angle)
+        rect = relocated_rect.image.get_rect()
+        relocated_rect.x = rect.x
+        relocated_rect.y = rect.y
+        x = (
+            (x_relative * math.cos(self.angle * self.radians))
+            - (y_relative * math.sin(self.angle * self.radians))
+        )
+        y = (
+            (y_relative * math.cos(self.angle * self.radians))
+            + (x_relative * math.sin(self.angle * self.radians))
+        )
+        relocated_rect.center = x + self.pj.x, y + self.pj.y
+        return relocated_rect
 
     def draw_map(self):
         for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
@@ -96,3 +120,21 @@ class BalalandGame:
         weapon_in_cam = self._locate_rect_in_cam(self.pj.weapon)
         pygame.draw.rect(self.cam.screen, pj_in_cam.color, pj_in_cam)
         pygame.draw.rect(self.cam.screen, weapon_in_cam.color, weapon_in_cam)
+
+    def draw_crosshair(self):
+        # TODO: customize crosshair more
+        mouse_pos = pygame.mouse.get_pos()
+        pygame.draw.line(
+            self.cam.screen,
+            (0, 0, 0),
+            (self.center_cam.x - 5, mouse_pos[1] - 5),
+            (self.center_cam.y + 5, mouse_pos[1] + 5),
+            1,
+        )
+        pygame.draw.line(
+            self.cam.screen,
+            (0, 0, 0),
+            (self.center_cam.x + 5, mouse_pos[1] - 5),
+            (self.center_cam.y - 5, mouse_pos[1] + 5),
+            1,
+        )

@@ -5,13 +5,20 @@ import pygame
 import balaland
 
 
-class ColorRect(pygame.Rect):
+class BaseRect(pygame.Rect):
     def __init__(self, x, y, width, height, color):
         super().__init__(int(x), int(y), width, height)
-        self.color = color
+        size = (width, height)
+        self.original_surface = pygame.Surface(size, pygame.SRCALPHA)
+        pygame.draw.rect(
+            self.original_surface, color, pygame.Rect((0, 0), size))
+        self.surface = self.original_surface
+        self.surface.set_rect(self)
+        # self.center = x + (width / 2), y + (height / 2)
+        # self.color = color
 
 
-class BalalandRect(ColorRect):
+class BalalandRect(BaseRect):
     def __init__(self, x, y, size, color, solid=False):
         super().__init__(int(x), int(y), size, size, color)
         self.solid = solid
@@ -82,7 +89,7 @@ class Pj(LivingRect):
         )
         self.color = (100, 175, 220)
         self.weapon_distance = int(os.environ.get('BL_PJ_WEAPON_DISTANCE'))
-        self.weapon = balaland.ColorRect(
+        self.weapon = BaseRect(
             self.x, self.y,
             int(os.environ.get('BL_PJ_WEAPON_WIDTH')),
             int(os.environ.get('BL_PJ_WEAPON_HEIGHT')),
