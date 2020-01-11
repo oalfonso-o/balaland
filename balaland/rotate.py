@@ -64,14 +64,12 @@ def main():
     tiles = [tile1, tile2, tile3, tile4]
     mouse_rel_x = 0
     pygame.mouse.set_visible(False)
-    correct_rotation = 0
     while True:
         handle_events()
         mouse_pos = pygame.mouse.get_pos()
-        if correct_rotation == 0 and mouse_pos[1] > map_size_half:
-            correct_rotation = 180
-        elif correct_rotation == 180 and mouse_pos[1] < map_size_half:
-            correct_rotation = 0
+        if mouse_pos[1] > map_size_half:
+            pygame.mouse.set_pos(mouse_pos[0], map_size_half)
+        mouse_pos = pygame.mouse.get_pos()
         screen.fill((255, 255, 255))
         pygame.draw.circle(
             screen, (0, 0, 0), (map_size_half, map_size_half), 3
@@ -92,7 +90,7 @@ def main():
         )
         mouse_rel_x += pygame.mouse.get_rel()[0]
         dist_x = map_size_half - mouse_rel_x
-        angle = (dist_x / sensibility) + correct_rotation
+        angle = (dist_x / sensibility)
         for tile in tiles:
             tile.update(angle)
             screen.blit(tile.image, tile.rect)
