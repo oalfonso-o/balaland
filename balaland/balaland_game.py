@@ -89,6 +89,11 @@ class BalalandGame:
         relocated_rect.center = x + self.pj.x, y + self.pj.y
         return relocated_rect
 
+    def _locate_pj_rect_in_cam(self, rect):
+        x = rect.x - self.cam.pos.x
+        y = rect.y - self.cam.pos.y
+        return balaland.BalalandRect(x, y, rect.width, rect.color)
+
     def draw_map(self):
         for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
             rect_in_cam = self._locate_rect_in_cam(tile)
@@ -112,10 +117,10 @@ class BalalandGame:
             self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
 
     def draw_pj(self):
-        pj_in_cam = self._locate_rect_in_cam(self.pj)
-        weapon_in_cam = self._locate_rect_in_cam(self.pj.weapon)
-        self.cam.screen.blit(pj_in_cam.surface, pj_in_cam)
-        self.cam.screen.blit(weapon_in_cam.surface, weapon_in_cam)
+        pj_in_cam = self._locate_pj_rect_in_cam(self.pj)
+        weapon_in_cam = self._locate_pj_rect_in_cam(self.pj.weapon)
+        pygame.draw.rect(self.cam.screen, pj_in_cam.color, pj_in_cam)
+        pygame.draw.rect(self.cam.screen, weapon_in_cam.color, weapon_in_cam)
 
     def draw_crosshair(self):
         # TODO: customize crosshair more
