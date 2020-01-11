@@ -16,6 +16,7 @@ class BaseRect(pygame.Rect):
         rect = self.surface.get_rect()
         self.width = rect.width
         self.height = rect.height
+        self.color = color
 
 
 class BalalandRect(BaseRect):
