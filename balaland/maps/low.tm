@@ -1,5 +1,5 @@
 w   w
-E   w
-  P w
+EP  w
+    w
     w
 wwwww

@@ -63,35 +63,23 @@ class BalalandGame:
         dist_x = self.center_cam.x - self.mouse_rel_x
         self.angle = (dist_x / self.sensibility)
         self.cam.screen.fill(self.black)
-        size = (100, 100)
-        srf = pygame.Surface(size, pygame.SRCALPHA)
-        pygame.draw.rect(
-            srf,
-            (100, 100, 0),
-            pygame.Rect((0, 0), size),
-        )
-        rect = srf.get_rect()
-        self.cam.screen.blit(srf, rect)
         tile_rect = balaland.BalalandRect(500, 0, 100, (0, 0, 100), True)
-        pygame.draw.rect(self.cam.screen, tile_rect.color, tile_rect)
         in_cam = self._locate_rect_in_cam(tile_rect)
-        self.cam.screen.blit(in_cam.original_surface, in_cam)
+        self.cam.screen.blit(in_cam.surface, in_cam)
         self.draw_map()
         self.draw_enemies()
         self.draw_projectiles()
         self.draw_pj()
         self.draw_crosshair()
-        pygame.display.flip()
         pygame.display.update()
 
     def _locate_rect_in_cam(self, rect):
         relocated_rect = copy.deepcopy(rect)
-        self.angle = 5
-        import pudb; pudb.set_trace()
-        x_relative = relocated_rect.x - self.pj.x
-        y_relative = relocated_rect.y - self.pj.y
+        self.angle = 45
+        x_relative = relocated_rect.center[0] - self.pj.center[0]
+        y_relative = relocated_rect.center[1] - self.pj.center[1]
         relocated_rect.surface = pygame.transform.rotate(
-            relocated_rect.original_surface, -self.angle)
+            rect.original_surface, -self.angle)
         surface_rect = relocated_rect.surface.get_rect()
         relocated_rect.width = surface_rect.width
         relocated_rect.height = surface_rect.height
@@ -103,8 +91,8 @@ class BalalandGame:
             (y_relative * math.cos(self.angle * self.radians))
             + (x_relative * math.sin(self.angle * self.radians))
         )
-        x = x + self.pj.x - self.cam.pos.x
-        y = y + self.pj.y - self.cam.pos.y
+        x = x + self.pj.center[0] - self.cam.pos.x
+        y = y + self.pj.center[1] - self.cam.pos.y
         relocated_rect.center = x, y
         return relocated_rect
 

@@ -12,7 +12,7 @@ class TileMap:
 
     def __init__(self):
         self.tile_size = int(os.environ.get('BL_TILE_MAP_TILE_SIZE'))
-        self.safety_tiles = 10
+        self.safety_tiles = 4
         self.enemy_size = int(os.environ.get('BL_PJ_SIZE'))
         self.enemies = []
         self.pj = None
