@@ -13,9 +13,9 @@ class BaseRect(pygame.Rect):
         pygame.draw.rect(
             self.original_surface, color, pygame.Rect((0, 0), size))
         self.surface = self.original_surface
-        self.surface.set_rect(self)
-        # self.center = x + (width / 2), y + (height / 2)
-        # self.color = color
+        rect = self.surface.get_rect()
+        self.width = rect.width
+        self.height = rect.height
 
 
 class BalalandRect(BaseRect):

@@ -5,7 +5,6 @@ import math
 import pygame
 
 import balaland
-# from balaland.cursors.standard import CROSSHAIR
 
 
 class BalalandGame:
@@ -17,9 +16,6 @@ class BalalandGame:
         pygame.init()
         pygame.event.set_grab(True)
         pygame.mouse.set_visible(False)
-        # cursor = pygame.cursors.compile(
-        #     CROSSHAIR, black='#', white='.', xor='o')
-        # pygame.mouse.set_cursor((24, 24), (11, 11), *cursor)
         self.tile_map = balaland.TileMap()
         self.pj = self.tile_map.pj
         self.cam = balaland.Cam(self.tile_map, self.pj)
@@ -77,11 +73,11 @@ class BalalandGame:
         relocated_rect = copy.copy(rect)
         x_relative = relocated_rect.x - self.pj.x
         y_relative = relocated_rect.y - self.pj.y
-        relocated_rect.image = pygame.transform.rotate(
-            relocated_rect.original_image, -self.angle)
-        rect = relocated_rect.image.get_rect()
-        relocated_rect.x = rect.x
-        relocated_rect.y = rect.y
+        relocated_rect.surface = pygame.transform.rotate(
+            relocated_rect.original_surface, -self.angle)
+        surface_rect = relocated_rect.surface.get_rect()
+        relocated_rect.width = surface_rect.width
+        relocated_rect.height = surface_rect.height
         x = (
             (x_relative * math.cos(self.angle * self.radians))
             - (y_relative * math.sin(self.angle * self.radians))
@@ -96,7 +92,7 @@ class BalalandGame:
     def draw_map(self):
         for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
             rect_in_cam = self._locate_rect_in_cam(tile)
-            pygame.draw.rect(self.cam.screen, rect_in_cam.color, rect_in_cam)
+            self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
 
     def get_drawable_solid_tiles(self):
         tiles = self.tile_map.get_tiles(self.cam.pos, self.cam.size)
@@ -105,7 +101,7 @@ class BalalandGame:
     def draw_enemies(self):
         for enemy in self.tile_map.enemies:
             rect_in_cam = self._locate_rect_in_cam(enemy)
-            pygame.draw.rect(self.cam.screen, rect_in_cam.color, rect_in_cam)
+            self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
 
     def draw_projectiles(self):
         for projectile in (
@@ -113,13 +109,13 @@ class BalalandGame:
             + self.movement_handler.collided_projectiles
         ):
             rect_in_cam = self._locate_rect_in_cam(projectile)
-            pygame.draw.rect(self.cam.screen, rect_in_cam.color, rect_in_cam)
+            self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
 
     def draw_pj(self):
         pj_in_cam = self._locate_rect_in_cam(self.pj)
         weapon_in_cam = self._locate_rect_in_cam(self.pj.weapon)
-        pygame.draw.rect(self.cam.screen, pj_in_cam.color, pj_in_cam)
-        pygame.draw.rect(self.cam.screen, weapon_in_cam.color, weapon_in_cam)
+        self.cam.screen.blit(pj_in_cam.surface, pj_in_cam)
+        self.cam.screen.blit(weapon_in_cam.surface, weapon_in_cam)
 
     def draw_crosshair(self):
         # TODO: customize crosshair more
