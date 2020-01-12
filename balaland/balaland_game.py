@@ -9,6 +9,7 @@ import balaland
 
 class BalalandGame:
     black = 0, 0, 0
+    white = 255, 255, 255
     sensibility = 8
     radians = math.pi / 180
 
@@ -63,7 +64,7 @@ class BalalandGame:
         self.mouse_rel_x += pygame.mouse.get_rel()[0]
         dist_x = self.center_cam.x - self.mouse_rel_x
         self.angle = (dist_x / self.sensibility)
-        self.cam.screen.fill(self.black)
+        self.cam.screen.fill(self.white)
         tile_rect = balaland.BalalandRect(500, 0, 100, (0, 0, 100), True)
         in_cam = self._locate_rect_in_cam(tile_rect)
         self.cam.screen.blit(in_cam.surface, in_cam)

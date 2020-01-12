@@ -1,8 +1,8 @@
 rotate:
-    bug axi not used still has minor movement
-    enemy die color
     anti-aliasing
+    bug axi not used still has minor movement
     perspective
+    minimap
 ia
     enemy collisions between them
     differenciate projectile ownership
