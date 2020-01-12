@@ -103,19 +103,9 @@ class Pj(LivingRect):
         super().__init__(
             int(self.x), int(self.y), self.width, self.color, True)
 
-    def update_weapon_position(self):
-        mouse_pos = pygame.mouse.get_pos()
-        direction = (self.center_pos() - mouse_pos).normalize()
-        self.weapon.x = (
-            + self.center_pos().x
-            + (direction.x * self.weapon_distance)
-            - (self.weapon.width / 2)
-        )
-        self.weapon.y = (
-            + self.center_pos().y
-            + (direction.y * self.weapon_distance)
-            - (self.weapon.height / 2)
-        )
+    def update_weapon_pos(self):
+        self.weapon.x = self.x + (self.width / 2)
+        self.weapon.y = self.y
 
 
 class EnemyRect(LivingRect):

@@ -27,7 +27,7 @@ class MovementHandler:
             pj_direction_x, pj_direction_y, self.balaland.angle)
         self.handle_pj_axis('x', pj_direction.x)
         self.handle_pj_axis('y', pj_direction.y)
-        self.pj.update_weapon_position()
+        self.pj.update_weapon_pos()
 
     def pj_direction_axis(self, axis, negative_key, positive_key):
         pressed_keys = pygame.key.get_pressed()
