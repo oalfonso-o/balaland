@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
+load_dotenv()
 
-from balaland import balaland_game
+from balaland import balaland_game  # noqa E402
 
 
 def play():
-    load_dotenv()
     BalalandGame = balaland_game.BalalandGame()
     while True:
         BalalandGame.update()

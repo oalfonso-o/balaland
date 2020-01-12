@@ -69,7 +69,7 @@ class BalalandGame:
         in_cam = self._locate_rect_in_cam(tile_rect)
         self.cam.screen.blit(in_cam.surface, in_cam)
         self.draw_map()
-        self.draw_enemies()
+        self.draw_dead_enemies()
         self.draw_projectiles()
         self.draw_pj()
         self.draw_crosshair()
@@ -103,16 +103,81 @@ class BalalandGame:
         return balaland.BalalandRect(x, y, rect.width, rect.color)
 
     def draw_map(self):
-        for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
+        for tile in self.get_visible_rects():
             rect_in_cam = self._locate_rect_in_cam(tile)
             self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
+
+    def get_visible_rects(self):
+        collidable_rects = (
+            self.get_drawable_solid_tiles()
+            + [enemy for enemy in self.tile_map.enemies if enemy.hp]
+        )
+        rays = self.get_rays(collidable_rects)
+        self.move_rays(rays, collidable_rects)
+        visible_surface = self.get_visible_surface(rays)
+        return self.get_rects_in_visible_surface(
+            collidable_rects, visible_surface)
 
     def get_drawable_solid_tiles(self):
         tiles = self.tile_map.get_tiles(self.cam.pos, self.cam.size)
         return [t for t in tiles if t.solid]
 
-    def draw_enemies(self):
-        for enemy in self.tile_map.enemies:
+    def get_rays(self, collidable_rects):
+        rays = []
+        close_rays = []
+        x = self.pj.x
+        y = self.pj.y
+        for rect in collidable_rects:
+            rays.append(balaland.Ray(x, y, rect.top, rect.left))
+            rays.append(balaland.Ray(x, y, rect.top, rect.right))
+            rays.append(balaland.Ray(x, y, rect.bottom, rect.left))
+            rays.append(balaland.Ray(x, y, rect.bottom, rect.left))
+        for ray in rays:
+            close_rays.append(
+                balaland.Ray(x, y, ray.target_x, ray.target_y, correct='+'))
+            close_rays.append(
+                balaland.Ray(x, y, ray.target_x, ray.target_y, correct='-'))
+        return rays
+
+    def move_rays(self, rays, collidable_rects):
+        dummy_vector = pygame.math.Vector2(0, 0)
+        for ray in rays:
+            for step in range(ray.limit):
+                ray.x += ray.direction.x
+                if (
+                    self.movement_handler.rect_collision(
+                        'x', collidable_rects, ray, dummy_vector)
+                ):
+                    break
+                ray.y += ray.direction.y
+                if (
+                    self.movement_handler.rect_collision(
+                        'y', collidable_rects, ray, dummy_vector)
+                ):
+                    break
+
+    def get_visible_surface(self, rays):
+        sorted_rays = sorted(rays, key=lambda x: x.angle)
+        points = [(ray.x, ray.y) for ray in sorted_rays]
+        surface = pygame.surface.Surface(
+            (balaland.Ray.limit * 2, balaland.Ray.limit * 2),
+            pygame.SRCALPHA,
+        )
+        pygame.draw.polygon(surface, self.black, points)
+        return surface
+
+    def get_rects_in_visible_surface(self, collidable_rects, visible_surface):
+        rects = []
+        visible_mask = pygame.mask.from_surface(visible_surface)
+        for rect in collidable_rects:
+            offset_x = self.pj.x - balaland.Ray.limit - rect.x
+            offset_y = self.pj.y - balaland.Ray.limit - rect.y
+            if rect.mask.overlap(visible_mask, (offset_x, offset_y)):
+                rects.append(rect)
+        return rects
+
+    def draw_dead_enemies(self):
+        for enemy in [e for e in self.tile_map.enemies if not e.hp]:
             rect_in_cam = self._locate_rect_in_cam(enemy)
             self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
 

@@ -1,8 +1,38 @@
 import os
+import math
 
 import pygame
 
 import balaland
+
+
+class Ray(pygame.Rect):
+    limit = int(os.environ.get('BL_RAY_LIMIT'))
+    correction = 0.0001
+
+    def __init__(self, x, y, target_x, target_y, correct=None):
+        super().__init__(int(x), int(y), 1, 1)
+        self.target_x = target_x
+        self.target_y = target_y
+        angle_correction = 0
+        if correct == '-':
+            angle_correction = - self.correction
+        elif correct == '+':
+            angle_correction = self.correction
+        dir_x = target_x - x
+        dir_y = target_y - y
+        self.angle = math.atan2(dir_x, dir_y) + angle_correction
+        self.direction = pygame.math.Vector2(
+            math.cos(self.angle),
+            math.sin(self.angle),
+        )
+
+    # TODO: improve center_pos uses to use Rect.center instead of this
+    def center_pos(self):
+        return pygame.math.Vector2(
+            self.x + self.width / 2,
+            self.y + self.height / 2,
+        )
 
 
 class BaseRect(pygame.Rect):
@@ -17,6 +47,7 @@ class BaseRect(pygame.Rect):
         rect = self.surface.get_rect()
         self.width = rect.width
         self.height = rect.height
+        self.mask = pygame.mask.from_surface(self.surface)
 
     def paint_surface(self):
         pygame.draw.rect(
@@ -27,7 +58,7 @@ class BaseRect(pygame.Rect):
         )
 
 
-class BalalandRect(BaseRect):
+class BalalandRect(BaseRect):  # TODO: rename SolidRect
     def __init__(self, x, y, size, color, solid=False):
         super().__init__(int(x), int(y), size, size, color)
         self.solid = solid
