@@ -23,7 +23,7 @@ class BaseRect(pygame.Rect):
             self.original_surface,
             self.color,
             pygame.Rect((0, 0), self.size),
-            1,
+            2,
         )
 
 

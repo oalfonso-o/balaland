@@ -4,7 +4,6 @@ rotate:
     perspective
     minimap
 ia
-    enemy collisions between them
     differenciate projectile ownership
     shot
 colors library

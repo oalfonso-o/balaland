@@ -133,8 +133,11 @@ class MovementHandler:
             solid_tiles = self.balaland.get_drawable_solid_tiles()
             self.rect_collision('x', solid_tiles, enemy, enemy)
             self.rect_collision('y', solid_tiles, enemy, enemy)
-            other_enemies = copy.copy(self.balaland.tile_map.enemies)
-            del other_enemies[other_enemies.index(enemy)]
+            other_enemies = [
+                e
+                for e in self.balaland.tile_map.enemies
+                if e is not enemy and e.hp
+            ]
             self.rect_collision(
                 'x', [self.pj] + other_enemies, enemy, enemy)
             self.rect_collision(
