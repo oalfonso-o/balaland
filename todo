@@ -1,3 +1,7 @@
+rotate:
+    fix mouse reset pos
+    enemy colors
+    enemy collisions between them
 ia
     differenciate projectile ownership
     shot

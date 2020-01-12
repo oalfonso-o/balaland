@@ -9,7 +9,7 @@ import balaland
 
 class BalalandGame:
     black = 0, 0, 0
-    sensibility = 4
+    sensibility = 8
     radians = math.pi / 180
 
     def __init__(self):
