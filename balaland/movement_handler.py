@@ -16,15 +16,9 @@ class MovementHandler:
         self.center_cam = self.cam.get_center_screen_vector()
 
     def move(self):
-        self.handle_cursor()
         self.handle_pj()
         self.handle_enemies()
         self.handle_projectiles()
-
-    def handle_cursor(self):
-        mouse_pos = pygame.mouse.get_pos()
-        if mouse_pos[1] > self.center_cam.y:
-            pygame.mouse.set_pos(mouse_pos[0], self.center_cam.y)
 
     def handle_pj(self):
         pj_direction_x = self.pj_direction_axis('x', pygame.K_a, pygame.K_d)

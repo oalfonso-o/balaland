@@ -132,6 +132,9 @@ class BalalandGame:
     def draw_crosshair(self):
         # TODO: customize crosshair more
         mouse_pos = pygame.mouse.get_pos()
+        if mouse_pos[1] >= self.center_cam.y:
+            pygame.mouse.set_pos(mouse_pos[0], self.center_cam.y)
+        mouse_pos = pygame.mouse.get_pos()
         pygame.draw.line(
             self.cam.screen,
             (0, 0, 0),
