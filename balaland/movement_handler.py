@@ -3,6 +3,8 @@ import math
 
 import pygame
 
+import balaland
+
 
 class MovementHandler:
     def __init__(self, balaland):
@@ -27,8 +29,8 @@ class MovementHandler:
     def handle_pj(self):
         pj_direction_x = self.pj_direction_axis('x', pygame.K_a, pygame.K_d)
         pj_direction_y = self.pj_direction_axis('y', pygame.K_w, pygame.K_s)
-        pj_direction = self._rotate_and_normalize(
-            pj_direction_x, pj_direction_y)
+        pj_direction = self.rotate_and_normalize(
+            pj_direction_x, pj_direction_y, self.balaland.angle)
         self.handle_pj_axis('x', pj_direction.x)
         self.handle_pj_axis('y', pj_direction.y)
         self.pj.update_weapon_position()
@@ -61,29 +63,18 @@ class MovementHandler:
             pj_direction = 0
         return pj_direction
 
-    def _rotate_and_normalize(self, pj_direction_x, pj_direction_y):
-        # TODO: refactor
-        rotated_pj_direction_x = (
-            (pj_direction_x * math.cos(
-                -self.balaland.angle * self.balaland.radians))
-            - (pj_direction_y * math.sin(
-                -self.balaland.angle * self.balaland.radians))
+    @classmethod
+    def rotate_and_normalize(cls, x, y, angle):
+        rotated_x = (
+            + (x * math.cos(-angle * balaland.BalalandGame.radians))
+            - (y * math.sin(-angle * balaland.BalalandGame.radians))
         )
-        rotated_pj_direction_y = (
-            (pj_direction_y * math.cos(
-                -self.balaland.angle * self.balaland.radians))
-            + (pj_direction_x * math.sin(
-                -self.balaland.angle * self.balaland.radians))
+        rotated_y = (
+            + (y * math.cos(-angle * balaland.BalalandGame.radians))
+            + (x * math.sin(-angle * balaland.BalalandGame.radians))
         )
-        direction = pygame.math.Vector2(
-            rotated_pj_direction_x,
-            rotated_pj_direction_y,
-        )
-        return (
-            direction.normalize()
-            if rotated_pj_direction_x or rotated_pj_direction_y
-            else direction
-        )
+        direction = pygame.math.Vector2(rotated_x, rotated_y)
+        return direction.normalize() if rotated_x or rotated_y else direction
 
     def handle_pj_axis(self, axis, direction):
         new_pj_pos = (

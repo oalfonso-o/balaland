@@ -38,12 +38,16 @@ class CenterPosRect(BalalandRect):
 
 
 class ProjectileRect(CenterPosRect):
-    def __init__(self, pos, mouse_pos=None, center_screen_pos=None):
-        if mouse_pos and center_screen_pos:
-            self.direction = (
+    def __init__(
+        self, pos, mouse_pos=None, center_screen_pos=None, angle=None
+    ):
+        if mouse_pos and center_screen_pos and angle:
+            raw_direction = (
                 + pygame.math.Vector2(center_screen_pos.x, center_screen_pos.y)
                 - mouse_pos
-            ).normalize()
+            )
+            self.direction = balaland.MovementHandler.rotate_and_normalize(
+                raw_direction.x, raw_direction.y, angle)
             self.speed = float(os.environ.get('BL_PROJECTILE_SPEED'))
             self.movement = pygame.math.Vector2(
                 - (self.direction.x * self.speed),

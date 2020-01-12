@@ -53,9 +53,10 @@ class BalalandGame:
 
     def handle_mouse_left_click_event(self, event):
         mouse_pos = pygame.mouse.get_pos()
+        target = self.center_cam.x, mouse_pos[1]
         center_screen_vector = self.cam.get_center_screen_vector()
         projectile = balaland.ProjectileRect(
-            self.pj.center_pos(), mouse_pos, center_screen_vector)
+            self.pj.center_pos(), target, center_screen_vector, self.angle)
         self.movement_handler.projectiles.append(projectile)
 
     def draw(self):
