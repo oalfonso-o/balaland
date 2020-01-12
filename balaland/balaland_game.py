@@ -14,7 +14,7 @@ class BalalandGame:
 
     def __init__(self):
         pygame.init()
-        pygame.event.set_grab(False)
+        pygame.event.set_grab(True)
         pygame.mouse.set_visible(False)
         self.tile_map = balaland.TileMap()
         self.pj = self.tile_map.pj
@@ -24,6 +24,7 @@ class BalalandGame:
         self._update_node_grids()
         self.mouse_rel_x = 0
         self.center_cam = self.cam.get_center_screen_vector()
+        self.angle = 0
 
     def _update_node_grids(self):
         for enemy in self.tile_map.enemies:
@@ -45,8 +46,7 @@ class BalalandGame:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 elif event.key == pygame.K_LALT or event.key == pygame.K_RALT:
-                    pass
-                    # pygame.event.set_grab(not pygame.event.get_grab())
+                    pygame.event.set_grab(not pygame.event.get_grab())
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.handle_mouse_left_click_event(event)
@@ -74,8 +74,7 @@ class BalalandGame:
         pygame.display.update()
 
     def _locate_rect_in_cam(self, rect):
-        relocated_rect = copy.deepcopy(rect)
-        self.angle = 45
+        relocated_rect = copy.copy(rect)
         x_relative = relocated_rect.center[0] - self.pj.center[0]
         y_relative = relocated_rect.center[1] - self.pj.center[1]
         relocated_rect.surface = pygame.transform.rotate(
