@@ -1,7 +1,10 @@
 rotate:
+    bug axi not used still has minor movement
     enemy die color
-    enemy collisions between them
+    anti-aliasing
+    perspective
 ia
+    enemy collisions between them
     differenciate projectile ownership
     shot
 colors library

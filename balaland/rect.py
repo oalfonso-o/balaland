@@ -8,15 +8,18 @@ import balaland
 class BaseRect(pygame.Rect):
     def __init__(self, x, y, width, height, color):
         super().__init__(int(x), int(y), width, height)
-        size = (width, height)
-        self.original_surface = pygame.Surface(size, pygame.SRCALPHA)
-        pygame.draw.rect(
-            self.original_surface, color, pygame.Rect((0, 0), size))
+        self.color = color
+        self.size = (width, height)
+        self.original_surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.paint_surface()
         self.surface = self.original_surface
         rect = self.surface.get_rect()
         self.width = rect.width
         self.height = rect.height
-        self.color = color
+
+    def paint_surface(self):
+        pygame.draw.rect(
+            self.original_surface, self.color, pygame.Rect((0, 0), self.size))
 
 
 class BalalandRect(BaseRect):
@@ -80,6 +83,7 @@ class LivingRect(CenterPosRect):
             self.solid = False
         elif self.hp == 1:
             self.color = self.critical_hp_color
+        self.paint_surface()
 
 
 class Pj(LivingRect):
