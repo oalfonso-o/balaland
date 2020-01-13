@@ -53,8 +53,10 @@ class TileMap:
                 map_.append(map_row)
         return map_
 
-    def get_tiles(self, map_pos, num_tiles):  # TODO: review safety tiles
-        start_tile_pos_y = int(map_pos.y // self.tile_size - self.safety_tiles)
+    def get_tiles(self, map_pos, num_tiles, safety_tiles=-1):  # TODO: review safety tiles
+        if safety_tiles == -1:
+            safety_tiles = self.safety_tiles
+        start_tile_pos_y = int(map_pos.y // self.tile_size - safety_tiles)
         start_tile_pos_y = start_tile_pos_y if start_tile_pos_y >= 0 else 0
         start_tile_pos_x = int(map_pos.x // self.tile_size - self.safety_tiles)
         start_tile_pos_x = start_tile_pos_x if start_tile_pos_x >= 0 else 0
