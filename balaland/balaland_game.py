@@ -15,8 +15,8 @@ class BalalandGame:
 
     def __init__(self):
         pygame.init()
-        pygame.event.set_grab(True)
-        pygame.mouse.set_visible(False)
+        # pygame.event.set_grab(True)
+        # pygame.mouse.set_visible(False)
         self.tile_map = balaland.TileMap()
         self.pj = self.tile_map.pj
         self.cam = balaland.Cam(self.tile_map, self.pj)
@@ -153,6 +153,9 @@ class BalalandGame:
         )
 
     def draw_shadows(self):
-        for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
-            rect_in_cam = self._locate_rect_in_cam(tile)
-            self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
+        # for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
+        #     rect_in_cam = self._locate_rect_in_cam(tile)
+        #     self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
+        rect_in_cam = self.tile_map.get_tiles(self.cam.pos, self.cam.size)[0]
+        import pudb; pudb.set_trace()
+        self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
