@@ -1,9 +1,9 @@
-        w
-        w
-  w     w
-        w
-        w
-        w
-        w
-P      Ew
+wwwwwwwww
+w       w
+w w     w
+w       w
+w       w
+w       w
+w       w
+wP     Ew
 wwwwwwwww

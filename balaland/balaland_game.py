@@ -73,6 +73,7 @@ class BalalandGame:
         self.draw_projectiles()
         self.draw_pj()
         self.draw_crosshair()
+        self.draw_shadows()
         pygame.display.update()
 
     def _locate_rect_in_cam(self, rect):
@@ -150,3 +151,8 @@ class BalalandGame:
             (self.center_cam.y - 5, mouse_pos[1] + 5),
             1,
         )
+
+    def draw_shadows(self):
+        for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
+            rect_in_cam = self._locate_rect_in_cam(tile)
+            self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
