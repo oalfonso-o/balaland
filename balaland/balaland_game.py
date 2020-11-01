@@ -15,8 +15,8 @@ class BalalandGame:
 
     def __init__(self):
         pygame.init()
-        # pygame.event.set_grab(True)
-        # pygame.mouse.set_visible(False)
+        pygame.event.set_grab(True)
+        pygame.mouse.set_visible(False)
         self.tile_map = balaland.TileMap()
         self.pj = self.tile_map.pj
         self.cam = balaland.Cam(self.tile_map, self.pj)
@@ -65,10 +65,7 @@ class BalalandGame:
         dist_x = self.center_cam.x - self.mouse_rel_x
         self.angle = (dist_x / self.sensibility)
         self.cam.screen.fill(self.white)
-        tile_rect = balaland.BalalandRect(500, 0, 100, (0, 0, 100), True)
-        in_cam = self._locate_rect_in_cam(tile_rect)
-        self.cam.screen.blit(in_cam.surface, in_cam)
-        self.draw_map()
+        # self.draw_map()
         self.draw_enemies()
         self.draw_projectiles()
         self.draw_pj()
@@ -153,9 +150,21 @@ class BalalandGame:
         )
 
     def draw_shadows(self):
-        # for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
-        #     rect_in_cam = self._locate_rect_in_cam(tile)
-        #     self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
-        rect_in_cam = self.tile_map.get_tiles(self.cam.pos, self.cam.size)[0]
-        import pudb; pudb.set_trace()
+        shadow_rect_width = (
+            (self.cam.size + self.tile_map.safety_tiles * 2)
+            * self.tile_map.tile_size
+        )
+        shadow_rect = balaland.rect.ShadowRect(0, 0, shadow_rect_width)
+        for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
+            if tile.solid:
+                points = (
+                    (tile.x, tile.y),
+                    (tile.x + tile.width, tile.y),
+                    (tile.x + tile.width, tile.y + tile.height),
+                    (tile.x, tile.y + tile.height),
+                )
+                pygame.draw.polygon(
+                    shadow_rect.original_surface, self.black, points, 0,
+                )
+        rect_in_cam = self._locate_rect_in_cam(shadow_rect)
         self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)

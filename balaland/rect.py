@@ -129,3 +129,13 @@ class EnemyRect(LivingRect):
 
     def init_node_grid(self, tile_map, target_rect):
         self.node_grid.initalize(tile_map, target_rect)
+
+
+class ShadowRect(pygame.Rect):
+    def __init__(self, x, y, width):
+        super().__init__(int(x), int(y), width, width)
+        self.size = (width, width)
+        self.original_surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.surface = self.original_surface
+        self.width = width
+        self.height = width

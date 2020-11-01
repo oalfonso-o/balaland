@@ -58,10 +58,10 @@ class TileMap:
         start_tile_pos_y = start_tile_pos_y if start_tile_pos_y >= 0 else 0
         start_tile_pos_x = int(map_pos.x // self.tile_size - self.safety_tiles)
         start_tile_pos_x = start_tile_pos_x if start_tile_pos_x >= 0 else 0
-        end_tile_pos_y = start_tile_pos_y + num_tiles + self.safety_tiles
+        end_tile_pos_y = start_tile_pos_y + num_tiles + self.safety_tiles * 2
         end_tile_pos_y = (
             end_tile_pos_y if end_tile_pos_y <= self.width else self.width)
-        end_tile_pos_x = start_tile_pos_x + num_tiles + self.safety_tiles
+        end_tile_pos_x = start_tile_pos_x + num_tiles + self.safety_tiles * 2
         end_tile_pos_x = (
             end_tile_pos_x if end_tile_pos_x <= self.width else self.width)
         tiles = [
