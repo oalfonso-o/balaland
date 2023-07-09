@@ -1,4 +1,14 @@
-This is a 2D shooter game to test PyGame lib
+# BALALAND
+
+This is a 2D shooter game to test PyGame lib. The goal is to create the same experience as a 1st person shooter with the same vision range and mechanic effect but being a 2D shooter, this means that the crosshair is going to be fixed and the camera is the one that is going to rotate and you can't see behind the walls.
+
+The camera rotation is something that you won't see in many games because the effect it produces is not very pleasent, is a bit dizzy, but it's interesting to test it.
+
+The shadowcasting to prevent the user seeing behind walls is not implemented yet, is work in progress.
+
+The enemies only follow you for now, it's pending to implement that they can shoot or do melee attacks.
+
+![Balaland Gameplay](gameplay.gif)
 
 Prerequisites for installation:
 
@@ -19,3 +29,4 @@ pip install -e .
 ```
 balaland
 ```
+
