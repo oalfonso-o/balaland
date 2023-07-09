@@ -1,6 +1,7 @@
 import sys
 import copy
 import math
+import time
 
 import pygame
 
@@ -15,7 +16,6 @@ class BalalandGame:
 
     def __init__(self):
         pygame.init()
-        pygame.event.set_grab(True)
         pygame.mouse.set_visible(False)
         self.tile_map = balaland.TileMap()
         self.pj = self.tile_map.pj
@@ -26,6 +26,9 @@ class BalalandGame:
         self.mouse_rel_x = 0
         self.center_cam = self.cam.get_center_screen_vector()
         self.angle = 0
+        while not pygame.event.get_grab():
+            time.sleep(0.1)
+            pygame.event.set_grab(True)  # it takes a bit to grab the cursor
 
     def _update_node_grids(self):
         for enemy in self.tile_map.enemies:
@@ -57,13 +60,14 @@ class BalalandGame:
         target = self.center_cam.x, mouse_pos[1]
         center_screen_vector = self.cam.get_center_screen_vector()
         projectile = balaland.ProjectileRect(
-            self.pj.center_pos(), target, center_screen_vector, self.angle)
+            self.pj.center_pos(), target, center_screen_vector, self.angle
+        )
         self.movement_handler.projectiles.append(projectile)
 
     def draw(self):
         self.mouse_rel_x += pygame.mouse.get_rel()[0]
         dist_x = self.center_cam.x - self.mouse_rel_x
-        self.angle = (dist_x / self.sensibility)
+        self.angle = dist_x / self.sensibility
         self.cam.screen.fill(self.white)
         # self.draw_map()
         self.draw_enemies()
@@ -78,17 +82,16 @@ class BalalandGame:
         x_relative = relocated_rect.center[0] - self.pj.center[0]
         y_relative = relocated_rect.center[1] - self.pj.center[1]
         relocated_rect.surface = pygame.transform.rotate(
-            rect.original_surface, -self.angle)
+            rect.original_surface, -self.angle
+        )
         surface_rect = relocated_rect.surface.get_rect()
         relocated_rect.width = surface_rect.width
         relocated_rect.height = surface_rect.height
-        x = (
-            (x_relative * math.cos(self.angle * self.radians))
-            - (y_relative * math.sin(self.angle * self.radians))
+        x = (x_relative * math.cos(self.angle * self.radians)) - (
+            y_relative * math.sin(self.angle * self.radians)
         )
-        y = (
-            (y_relative * math.cos(self.angle * self.radians))
-            + (x_relative * math.sin(self.angle * self.radians))
+        y = (y_relative * math.cos(self.angle * self.radians)) + (
+            x_relative * math.sin(self.angle * self.radians)
         )
         x = x + self.pj.center[0] - self.cam.pos.x
         y = y + self.pj.center[1] - self.cam.pos.y
@@ -151,9 +154,8 @@ class BalalandGame:
 
     def draw_shadows(self):
         shadow_rect_width = (
-            (self.cam.size + self.tile_map.safety_tiles * 2)
-            * self.tile_map.tile_size
-        )
+            self.cam.size + self.tile_map.safety_tiles * 2
+        ) * self.tile_map.tile_size
         shadow_rect = balaland.rect.ShadowRect(0, 0, shadow_rect_width)
         for tile in self.tile_map.get_tiles(self.cam.pos, self.cam.size):
             if tile.solid:
@@ -164,7 +166,10 @@ class BalalandGame:
                     (tile.x, tile.y + tile.height),
                 )
                 pygame.draw.polygon(
-                    shadow_rect.original_surface, self.black, points, 0,
+                    shadow_rect.original_surface,
+                    self.black,
+                    points,
+                    0,
                 )
         rect_in_cam = self._locate_rect_in_cam(shadow_rect)
         self.cam.screen.blit(rect_in_cam.surface, rect_in_cam)
