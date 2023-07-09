@@ -8,7 +8,8 @@ The shadowcasting to prevent the user seeing behind walls is not implemented yet
 
 The enemies only follow you for now, it's pending to implement that they can shoot or do melee attacks.
 
-![Balaland Gameplay](gameplay.gif)
+![gameplay](https://github.com/oalfonso-o/balaland/assets/9935204/b40bdb7b-19af-443a-9f0c-a84541314c0e)
+
 
 Prerequisites for installation:
 
