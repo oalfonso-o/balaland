@@ -1,8 +1,9 @@
 rotate:
-    anti-aliasing
-    bug axi not used still has minor movement
-    perspective
     minimap
+shadow casting:
+    - examples without rotation:
+        - scipy + shapely: https://github.com/Serverautism/CsLow
+        - numpy: https://github.com/gokmavisianka/ShadowCasting/tree/main
 ia
     differenciate projectile ownership
     shot
